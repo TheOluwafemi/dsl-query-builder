@@ -1,0 +1,26 @@
+{
+  "name": "opensearch-querybuilder",
+  "version": "0.1.0",
+  "description": "opensearch querybuilder",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TheOluwafemi/opensearch-querybuilder.git"
+  },
+  "keywords": [
+    "elastic",
+    "search",
+    "open",
+    "search",
+    "query-builder"
+  ],
+  "author": "D. Oluwafemi",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/TheOluwafemi/opensearch-querybuilder/issues"
+  },
+  "homepage": "https://github.com/TheOluwafemi/opensearch-querybuilder#readme"
+}
