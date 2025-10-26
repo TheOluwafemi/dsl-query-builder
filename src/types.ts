@@ -78,3 +78,5 @@ export interface RangeQuery {
   lt?: any
   boost?: number
 }
+
+export { ValidationError } from './validation'

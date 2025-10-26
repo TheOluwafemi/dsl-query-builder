@@ -7,6 +7,11 @@ import {
   SearchState,
   QueryDSL,
 } from './types'
+import {
+  validateSearchConfig,
+  validateIndexName,
+  validateMsearchQueries,
+} from './validation'
 
 export class SearchClient {
   private config: Required<SearchConfig>
@@ -19,6 +24,8 @@ export class SearchClient {
   private stateListeners: Set<(state: SearchState) => void> = new Set()
 
   constructor(config: SearchConfig) {
+    validateSearchConfig(config)
+
     this.config = {
       endpoint: config.endpoint,
       index: config.index || '',
@@ -61,6 +68,8 @@ export class SearchClient {
         'Index must be specified either in config or search method'
       )
     }
+
+    validateIndexName(searchIndex, 'search method')
 
     const dsl = query instanceof QueryBuilder ? query.build() : query
 
@@ -106,6 +115,8 @@ export class SearchClient {
       )
     }
 
+    validateIndexName(searchIndex, 'count method')
+
     const dsl = query instanceof QueryBuilder ? query.build() : query
     const countQuery = { query: dsl.query }
 
@@ -141,6 +152,7 @@ export class SearchClient {
    * Update index
    */
   setIndex(index: string): this {
+    validateIndexName(index, 'setIndex method')
     this.config.index = index
     return this
   }
@@ -162,6 +174,8 @@ export class SearchClient {
   async msearch<T = any>(
     searches: Array<{ index?: string; query: QueryBuilder | QueryDSL }>
   ): Promise<SearchResponse<T>[]> {
+    validateMsearchQueries(searches)
+
     const body = searches.flatMap((search) => [
       { index: search.index || this.config.index },
       search.query instanceof QueryBuilder

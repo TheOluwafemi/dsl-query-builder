@@ -1,4 +1,14 @@
 import { QueryDSL, SortOrder, SortOption, RangeQuery } from './types'
+import {
+  validateFieldName,
+  validateQueryValue,
+  validatePaginationParams,
+  validateSortOrder,
+  validateRangeQuery,
+  validateStringArray,
+  validateMultiMatchType,
+  validateAggregationName,
+} from './validation'
 
 export class QueryBuilder {
   private query: QueryDSL = {
@@ -18,6 +28,7 @@ export class QueryBuilder {
    * Set pagination - from offset
    */
   from(value: number): this {
+    validatePaginationParams(value, undefined)
     this.query.from = value
     return this
   }
@@ -26,6 +37,7 @@ export class QueryBuilder {
    * Set pagination - size/limit
    */
   size(value: number): this {
+    validatePaginationParams(undefined, value)
     this.query.size = value
     return this
   }
@@ -34,6 +46,8 @@ export class QueryBuilder {
    * Add a match query to must clause
    */
   match(field: string, value: any, operator?: 'and' | 'or'): this {
+    validateFieldName(field, 'match query')
+    validateQueryValue(value, 'match query')
     this.ensureBoolQuery()
     const matchQuery: any = { match: { [field]: { query: value } } }
     if (operator) {
@@ -47,6 +61,8 @@ export class QueryBuilder {
    * Add a match_phrase query to must clause
    */
   matchPhrase(field: string, value: string): this {
+    validateFieldName(field, 'match_phrase query')
+    validateQueryValue(value, 'match_phrase query')
     this.ensureBoolQuery()
     this.query.query!.bool!.must!.push({
       match_phrase: { [field]: value },
@@ -58,6 +74,8 @@ export class QueryBuilder {
    * Add a term query to filter clause
    */
   term(field: string, value: any): this {
+    validateFieldName(field, 'term query')
+    validateQueryValue(value, 'term query')
     this.ensureBoolQuery()
     this.query.query!.bool!.filter!.push({
       term: { [field]: value },
@@ -69,6 +87,10 @@ export class QueryBuilder {
    * Add a terms query to filter clause
    */
   terms(field: string, values: any[]): this {
+    validateFieldName(field, 'terms query')
+    if (!Array.isArray(values) || values.length === 0) {
+      throw new Error('terms query values must be a non-empty array')
+    }
     this.ensureBoolQuery()
     this.query.query!.bool!.filter!.push({
       terms: { [field]: values },
@@ -80,6 +102,8 @@ export class QueryBuilder {
    * Add a range query to filter clause
    */
   range(field: string, range: RangeQuery): this {
+    validateFieldName(field, 'range query')
+    validateRangeQuery(range)
     this.ensureBoolQuery()
     this.query.query!.bool!.filter!.push({
       range: { [field]: range },
@@ -91,6 +115,7 @@ export class QueryBuilder {
    * Add a exists query to filter clause
    */
   exists(field: string): this {
+    validateFieldName(field, 'exists query')
     this.ensureBoolQuery()
     this.query.query!.bool!.filter!.push({
       exists: { field },
@@ -102,6 +127,8 @@ export class QueryBuilder {
    * Add a wildcard query to must clause
    */
   wildcard(field: string, value: string): this {
+    validateFieldName(field, 'wildcard query')
+    validateQueryValue(value, 'wildcard query')
     this.ensureBoolQuery()
     this.query.query!.bool!.must!.push({
       wildcard: { [field]: value },
@@ -113,6 +140,8 @@ export class QueryBuilder {
    * Add a prefix query to must clause
    */
   prefix(field: string, value: string): this {
+    validateFieldName(field, 'prefix query')
+    validateQueryValue(value, 'prefix query')
     this.ensureBoolQuery()
     this.query.query!.bool!.must!.push({
       prefix: { [field]: value },
@@ -171,6 +200,11 @@ export class QueryBuilder {
    * Add multi_match query
    */
   multiMatch(fields: string[], value: string, type?: string): this {
+    validateStringArray(fields, 'multi_match fields')
+    validateQueryValue(value, 'multi_match query')
+    if (type !== undefined) {
+      validateMultiMatchType(type)
+    }
     this.ensureBoolQuery()
     const multiMatchQuery: any = {
       multi_match: {
@@ -189,6 +223,8 @@ export class QueryBuilder {
    * Add sorting
    */
   sort(field: string, order: SortOrder = 'asc'): this {
+    validateFieldName(field, 'sort')
+    validateSortOrder(order)
     if (!this.query.sort) {
       this.query.sort = []
     }
@@ -227,6 +263,10 @@ export class QueryBuilder {
    * Add aggregation
    */
   aggregate(name: string, aggregation: any): this {
+    validateAggregationName(name)
+    if (!aggregation || typeof aggregation !== 'object') {
+      throw new Error('Aggregation must be an object')
+    }
     if (!this.query.aggs) {
       this.query.aggs = {}
     }
@@ -238,6 +278,10 @@ export class QueryBuilder {
    * Add terms aggregation helper
    */
   termsAgg(name: string, field: string, size: number = 10): this {
+    validateFieldName(field, 'terms aggregation')
+    if (!Number.isInteger(size) || size <= 0) {
+      throw new Error('Terms aggregation size must be a positive integer')
+    }
     return this.aggregate(name, {
       terms: { field, size },
     })
@@ -252,6 +296,14 @@ export class QueryBuilder {
     interval: string,
     format?: string
   ): this {
+    validateFieldName(field, 'date histogram aggregation')
+    if (
+      !interval ||
+      typeof interval !== 'string' ||
+      interval.trim().length === 0
+    ) {
+      throw new Error('Date histogram interval must be a non-empty string')
+    }
     const agg: any = {
       date_histogram: {
         field,

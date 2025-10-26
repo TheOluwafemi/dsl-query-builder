@@ -3,6 +3,7 @@ import { SearchClient } from './search-client'
 
 export { QueryBuilder } from './query-builder'
 export { SearchClient } from './search-client'
+export { ValidationError } from './validation'
 export * from './types'
 
 // Function to create a new search client
