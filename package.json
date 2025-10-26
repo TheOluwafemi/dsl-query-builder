@@ -1,36 +1,28 @@
 {
-  "name": "opensearch-querybuilder",
-  "version": "0.1.0",
-  "description": "OpenSearch Query Builder and Client",
-  "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    "import": "./dist/index.mjs",
-    "require": "./dist/index.js"
-  },
+  "name": "query-composer",
+  "version": "1.0.0",
+  "description": "A fluent TypeScript query builder for OpenSearch/Elasticsearch DSL",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsup",
-    "release": "npm run build && changeset publish",
-    "lint": "tsc"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/TheOluwafemi/opensearch-querybuilder.git"
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "prepublishOnly": "npm run build"
   },
   "keywords": [
-    "elastic-search",
-    "open-search",
-    "query-builder"
+    "opensearch",
+    "elasticsearch",
+    "query-builder",
+    "dsl",
+    "typescript"
   ],
-  "author": "D. Oluwafemi",
+  "author": "Damilola Oluwafemi",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/TheOluwafemi/opensearch-querybuilder/issues"
-  },
-  "homepage": "https://github.com/TheOluwafemi/opensearch-querybuilder#readme",
   "devDependencies": {
-    "tsup": "^8.3.6",
-    "typescript": "^5.7.3"
+    "@types/node": "^20.10.0",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "axios": "^1.6.2"
   }
 }
