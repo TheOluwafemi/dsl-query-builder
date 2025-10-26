@@ -93,18 +93,30 @@ export function validateSortOrder(order: any): void {
   }
 }
 
-export function validatePaginationParams(from?: number, size?: number): void {
+export function validatePaginationParams(
+  from?: number,
+  size?: number,
+  field?: string
+): void {
   if (from !== undefined && (!Number.isInteger(from) || from < 0)) {
-    throw new ValidationError('from parameter must be a non-negative integer')
+    throw new ValidationError(
+      'from parameter must be a non-negative integer',
+      field
+    )
   }
 
-  if (size !== undefined && (!Number.isInteger(size) || size <= 0)) {
-    throw new ValidationError('size parameter must be a positive integer')
+  // Allow size(0) for aggregation-only queries, but reject negative sizes
+  if (size !== undefined && (!Number.isInteger(size) || size < 0)) {
+    throw new ValidationError(
+      'size parameter must be a non-negative integer',
+      field
+    )
   }
 
   if (size !== undefined && size > 10000) {
     throw new ValidationError(
-      'size parameter cannot exceed 10000 (Elasticsearch limit)'
+      'size parameter cannot exceed 10000 (Elasticsearch limit)',
+      field
     )
   }
 }

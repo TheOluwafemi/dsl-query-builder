@@ -37,7 +37,7 @@ export class QueryBuilder {
    * Set pagination - size/limit
    */
   size(value: number): this {
-    validatePaginationParams(undefined, value)
+    validatePaginationParams(undefined, value, 'size')
     this.query.size = value
     return this
   }

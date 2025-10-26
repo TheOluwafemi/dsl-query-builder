@@ -209,6 +209,7 @@ export class SearchClient {
       status: error.response?.status,
       details: error.response?.data,
     }
+
     return searchError
   }
 
