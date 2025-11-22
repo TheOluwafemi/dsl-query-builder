@@ -7,7 +7,7 @@ updates:
       day: 'monday'
       time: '09:00'
       timezone: 'Etc/UTC'
-    open-pull-requests-limit: 2
+    open-pull-requests-limit: 1
     assignees:
       - 'TheOluwafemi'
     commit-message:
@@ -15,3 +15,17 @@ updates:
       include: 'scope'
     labels:
       - 'dependencies'
+    groups:
+      production-dependencies:
+        patterns:
+          - 'axios'
+      development-dependencies:
+        patterns:
+          - '@types/*'
+          - '@semantic-release/*'
+          - '@typescript-eslint/*'
+          - 'eslint*'
+          - 'jest*'
+          - 'ts-*'
+          - 'typescript'
+          - 'tsup'
