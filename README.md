@@ -1,4 +1,4 @@
-# Query Composer
+# Search Query Builder
 
 A fluent TypeScript query builder for OpenSearch/Elasticsearch DSL with built-in client and type safety.
 

@@ -1,27 +1,65 @@
 {
-  "name": "query-composer",
+  "name": "search-query-builder",
   "version": "1.0.0",
   "description": "A fluent TypeScript query builder for OpenSearch/Elasticsearch DSL",
   "main": "dist/index.js",
+  "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
     "test": "jest",
     "test:watch": "jest --watch",
+    "test:ci": "jest --ci --coverage --watchAll=true",
     "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix",
     "type-check": "tsc --noEmit",
-    "prepublishOnly": "npm run build"
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run clean && npm run build && npm run test:ci",
+    "release:patch": "npm version patch && git push && git push --tags",
+    "release:minor": "npm version minor && git push && git push --tags",
+    "release:major": "npm version major && git push && git push --tags"
   },
   "keywords": [
     "opensearch",
     "elasticsearch",
     "query-builder",
     "dsl",
-    "typescript"
+    "typescript",
+    "fluent-api",
+    "search",
+    "database"
   ],
-  "author": "Damilola Oluwafemi",
+  "author": {
+    "name": "Damilola Oluwafemi",
+    "email": "your.email@example.com",
+    "url": "https://github.com/TheOluwafemi"
+  },
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TheOluwafemi/query-composer.git"
+  },
+  "bugs": {
+    "url": "https://github.com/TheOluwafemi/query-composer/issues"
+  },
+  "homepage": "https://github.com/TheOluwafemi/query-composer#readme",
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=7.0.0"
+  },
   "devDependencies": {
     "@types/jest": "^29.5.0",
     "@types/node": "^20.10.0",
