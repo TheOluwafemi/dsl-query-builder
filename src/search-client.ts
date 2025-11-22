@@ -31,7 +31,7 @@ export class SearchClient {
       index: config.index || '',
       token: config.token || '',
       retries: config.retries || 3,
-      timeout: config.timeout || 30000,
+      timeout: config.timeout || 5000,
       headers: config.headers || {},
     }
 
@@ -89,13 +89,21 @@ export class SearchClient {
       } catch (error) {
         lastError = this.handleError(error as AxiosError)
 
-        if (attempt === this.config.retries) {
+        // Check if error is retryable
+        if (
+          !this.isRetryableError(lastError) ||
+          attempt === this.config.retries
+        ) {
           this.updateState({ loading: false, error: lastError })
           throw lastError
         }
 
-        // Exponential backoff
-        await this.delay(Math.pow(2, attempt) * 1000)
+        // Improved retry delay with jitter and max cap
+        const baseDelay = Math.min(1000 * Math.pow(1.5, attempt), 5000) // Cap at 5s
+        const jitter = Math.random() * 200 // Add 0-200ms jitter
+        const delay = baseDelay + jitter
+
+        await this.delay(delay)
       }
     }
 
@@ -211,6 +219,33 @@ export class SearchClient {
     }
 
     return searchError
+  }
+
+  private isRetryableError(error: SearchError): boolean {
+    // Don't retry on client errors (4xx) except for specific cases
+    if (error.status && error.status >= 400 && error.status < 500) {
+      // Retry on rate limiting and timeouts
+      return error.status === 429 || error.status === 408
+    }
+
+    // Retry on server errors (5xx) and network errors
+    if (error.status && error.status >= 500) {
+      return true
+    }
+
+    // Retry on network errors (no status)
+    if (!error.status) {
+      // Check for specific network error patterns
+      const networkErrors = [
+        'ECONNRESET',
+        'ECONNREFUSED',
+        'ETIMEDOUT',
+        'ENOTFOUND',
+      ]
+      return networkErrors.some((netError) => error.message.includes(netError))
+    }
+
+    return false
   }
 
   private delay(ms: number): Promise<void> {
