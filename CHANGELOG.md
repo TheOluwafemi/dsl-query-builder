@@ -1,24 +1,22 @@
 # 1.0.0 (2025-11-22)
 
-
 ### Bug Fixes
 
-* update README to reflect correct library name for tests ([3d744f0](https://github.com/TheOluwafemi/search-query-builder/commit/3d744f0ae106d3e15725378f33ac00b229dbe22f))
-* update TypeScript configuration to use ES2020 and commonjs module ([bc3d79b](https://github.com/TheOluwafemi/search-query-builder/commit/bc3d79be4da7ddd667408ecdb26b72cc66065365))
-
+- update README to reflect correct library name for tests ([3d744f0](https://github.com/TheOluwafemi/dsl-query-builder/commit/3d744f0ae106d3e15725378f33ac00b229dbe22f))
+- update TypeScript configuration to use ES2020 and commonjs module ([bc3d79b](https://github.com/TheOluwafemi/dsl-query-builder/commit/bc3d79be4da7ddd667408ecdb26b72cc66065365))
 
 ### Features
 
-* add issue templates, CI/CD workflows, and deployment scripts for Search Query Builder ([49d33c6](https://github.com/TheOluwafemi/search-query-builder/commit/49d33c6c0fcba24e700d3451875b3dacccc96a6b))
-* enhance .gitignore and .npmignore for better build and environment management ([463fe77](https://github.com/TheOluwafemi/search-query-builder/commit/463fe77bf2e1e176e6c109df72759bd0c2c78eac))
-* enhance term query to automatically append '.keyword' for exact matching ([684ae96](https://github.com/TheOluwafemi/search-query-builder/commit/684ae9656d4c3c25d2cb95764a1399221d6c4cc5))
-* implement SearchClient and QueryBuilder with enhanced query capabilities ([172dcc1](https://github.com/TheOluwafemi/search-query-builder/commit/172dcc1a9a3bf00e20f0b59d477a2d0bd0c5e630))
-* improve error handling and retry logic in SearchClient ([7a4bf81](https://github.com/TheOluwafemi/search-query-builder/commit/7a4bf816cd71eb2ff9591a471d2f50bf3532b7b4))
-* migrate to semantic-release for versioning and release management ([08abe75](https://github.com/TheOluwafemi/search-query-builder/commit/08abe7525e8eb82a2bc470ecb9b0875d666921f5))
-* open search client & query-builder ([ad500b0](https://github.com/TheOluwafemi/search-query-builder/commit/ad500b0968885c0cac74d7b4cd71f1a95698192b))
-* update build process and add validation utilities ([4d8062e](https://github.com/TheOluwafemi/search-query-builder/commit/4d8062e2753e8f9eebd8963c42046c00325587f0))
-* update term queries to use keyword fields for exact matching ([41e9f94](https://github.com/TheOluwafemi/search-query-builder/commit/41e9f942fc045472b040ed65a7ea22cbf241eb9d))
-* update workflows and tests for Search Query Builder package ([f7e30bf](https://github.com/TheOluwafemi/search-query-builder/commit/f7e30bf3a56f5b3444febd4773cd7089a62f7d53))
+- add issue templates, CI/CD workflows, and deployment scripts for DSL Query Builder ([49d33c6](https://github.com/TheOluwafemi/dsl-query-builder/commit/49d33c6c0fcba24e700d3451875b3dacccc96a6b))
+- enhance .gitignore and .npmignore for better build and environment management ([463fe77](https://github.com/TheOluwafemi/dsl-query-builder/commit/463fe77bf2e1e176e6c109df72759bd0c2c78eac))
+- enhance term query to automatically append '.keyword' for exact matching ([684ae96](https://github.com/TheOluwafemi/dsl-query-builder/commit/684ae9656d4c3c25d2cb95764a1399221d6c4cc5))
+- implement SearchClient and QueryBuilder with enhanced query capabilities ([172dcc1](https://github.com/TheOluwafemi/dsl-query-builder/commit/172dcc1a9a3bf00e20f0b59d477a2d0bd0c5e630))
+- improve error handling and retry logic in SearchClient ([7a4bf81](https://github.com/TheOluwafemi/dsl-query-builder/commit/7a4bf816cd71eb2ff9591a471d2f50bf3532b7b4))
+- migrate to semantic-release for versioning and release management ([08abe75](https://github.com/TheOluwafemi/dsl-query-builder/commit/08abe7525e8eb82a2bc470ecb9b0875d666921f5))
+- open search client & query-builder ([ad500b0](https://github.com/TheOluwafemi/dsl-query-builder/commit/ad500b0968885c0cac74d7b4cd71f1a95698192b))
+- update build process and add validation utilities ([4d8062e](https://github.com/TheOluwafemi/dsl-query-builder/commit/4d8062e2753e8f9eebd8963c42046c00325587f0))
+- update term queries to use keyword fields for exact matching ([41e9f94](https://github.com/TheOluwafemi/dsl-query-builder/commit/41e9f942fc045472b040ed65a7ea22cbf241eb9d))
+- update workflows and tests for DSL Query Builder package ([f7e30bf](https://github.com/TheOluwafemi/dsl-query-builder/commit/f7e30bf3a56f5b3444febd4773cd7089a62f7d53))
 
 # Changelog
 
@@ -31,7 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Initial release of Search Query Builder
+- Initial release of DSL Query Builder
 - Fluent TypeScript query builder for OpenSearch/Elasticsearch DSL
 - Built-in HTTP client with retry logic and state management
 - Full TypeScript support with generic types

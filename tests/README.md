@@ -1,6 +1,6 @@
-# Search Query Builder Tests
+# DSL Query Builder Tests
 
-This directory contains comprehensive tests for the Search Query Builder library.
+This directory contains comprehensive tests for the DSL Query Builder library.
 
 ## Test Structure
 

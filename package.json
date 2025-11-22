@@ -1,6 +1,6 @@
 {
-  "name": "search-query-builder",
-  "version": "1.0.1",
+  "name": "dsl-query-builder",
+  "version": "1.0.0",
   "description": "A fluent TypeScript query builder for OpenSearch/Elasticsearch DSL",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -49,12 +49,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/TheOluwafemi/search-query-builder.git"
+    "url": "https://github.com/TheOluwafemi/dsl-query-builder.git"
   },
   "bugs": {
-    "url": "https://github.com/TheOluwafemi/search-query-builder/issues"
+    "url": "https://github.com/TheOluwafemi/dsl-query-builder/issues"
   },
-  "homepage": "https://github.com/TheOluwafemi/search-query-builder#readme",
+  "homepage": "https://github.com/TheOluwafemi/dsl-query-builder#readme",
   "engines": {
     "node": ">=16.0.0",
     "npm": ">=7.0.0"

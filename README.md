@@ -1,4 +1,4 @@
-# Search Query Builder
+# DSL Query Builder
 
 A fluent TypeScript query builder for OpenSearch/Elasticsearch DSL with built-in client and type safety.
 
@@ -14,15 +14,15 @@ A fluent TypeScript query builder for OpenSearch/Elasticsearch DSL with built-in
 ## Installation
 
 ```bash
-npm install search-query-builder
+npm install dsl-query-builder
 # or
-yarn add search-query-builder
+yarn add dsl-query-builder
 ```
 
 ## Quick Start
 
 ```typescript
-import { createSearchClient, createQuery } from 'search-query-builder'
+import { createSearchClient, createQuery } from 'dsl-query-builder'
 
 // Create a search client
 const client = createSearchClient({
