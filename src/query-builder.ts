@@ -72,13 +72,18 @@ export class QueryBuilder {
 
   /**
    * Add a term query to filter clause
+   * Automatically appends '.keyword' to field name for exact matching
    */
   term(field: string, value: any): this {
     validateFieldName(field, 'term query')
     validateQueryValue(value, 'term query')
     this.ensureBoolQuery()
+
+    // Append .keyword if not already present
+    const fieldName = field.endsWith('.keyword') ? field : `${field}.keyword`
+
     this.query.query!.bool!.filter!.push({
-      term: { [field]: value },
+      term: { [fieldName]: value },
     })
     return this
   }
