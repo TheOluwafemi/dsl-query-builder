@@ -118,7 +118,7 @@ describe('QueryBuilder', () => {
     it('should add term query', () => {
       const result = queryBuilder.term('status', 'published').build()
       expect(result.query?.bool?.filter).toContainEqual({
-        term: { status: 'published' },
+        term: { 'status.keyword': 'published' },
       })
     })
 
@@ -191,10 +191,10 @@ describe('QueryBuilder', () => {
         .build()
 
       expect(result.query?.bool?.should).toContainEqual({
-        term: { brand: 'apple' },
+        term: { 'brand.keyword': 'apple' },
       })
       expect(result.query?.bool?.should).toContainEqual({
-        term: { brand: 'samsung' },
+        term: { 'brand.keyword': 'samsung' },
       })
     })
 
@@ -213,7 +213,7 @@ describe('QueryBuilder', () => {
         .build()
 
       expect(result.query?.bool?.must_not).toContainEqual({
-        term: { status: 'deleted' },
+        term: { 'status.keyword': 'deleted' },
       })
     })
   })
