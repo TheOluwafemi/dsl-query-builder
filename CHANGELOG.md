@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/TheOluwafemi/dsl-query-builder/compare/v1.0.0...v1.0.1) (2025-11-22)
+
+
+### Bug Fixes
+
+* README with improved examples, clearer instructions for client setup and deploy package. ([9c034de](https://github.com/TheOluwafemi/dsl-query-builder/commit/9c034de8dd46101712abd1d84a9454387faa6367))
+
 # 1.0.0 (2025-11-22)
 
 ### Bug Fixes
