@@ -1,8 +1,49 @@
-/node_modules
+# Source code
 /src
+/tests
 
-.env 
-.DS_Store
-
+# Development files
 tsconfig.json
 tsup.config.ts
+jest.config.js
+.eslintrc*
+.prettierrc*
+
+# Scripts and configs
+/scripts
+/docs
+/.github
+
+# Environment and OS files
+.env*
+.DS_Store
+*.log
+
+# Development dependencies
+node_modules/
+coverage/
+.nyc_output
+
+# Temporary files
+*.tmp
+*.temp
+*.tgz
+*.tar.gz
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Test files
+**/*.test.ts
+**/*.spec.ts
+/run-search-tests.sh
+
+# Only include in npm package:
+# - dist/
+# - README.md
+# - LICENSE
+# - CHANGELOG.md
+# - package.json
