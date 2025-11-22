@@ -1,6 +1,6 @@
-# Query Composer Tests
+# Search Query Builder Tests
 
-This directory contains comprehensive tests for the Query Composer library.
+This directory contains comprehensive tests for the Search Query Builder library.
 
 ## Test Structure
 
