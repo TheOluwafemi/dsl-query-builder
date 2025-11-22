@@ -63,7 +63,7 @@ describe('SearchClient', () => {
       // Check that axios.create was called with correct config
       expect(mockAxios.create).toHaveBeenLastCalledWith({
         baseURL: 'https://elasticsearch.example.com',
-        timeout: 30000,
+        timeout: 5000,
         headers: {
           'Content-Type': 'application/json',
           Authorization: 'Bearer test-token',
@@ -86,7 +86,7 @@ describe('SearchClient', () => {
 
       expect(mockAxios.create).toHaveBeenCalledWith({
         baseURL: 'https://elasticsearch.example.com',
-        timeout: 30000,
+        timeout: 5000,
         headers: {
           'Content-Type': 'application/json',
           'Custom-Header': 'custom-value',
@@ -233,7 +233,8 @@ describe('SearchClient', () => {
       // Use fake timers to speed up the test
       jest.useFakeTimers()
 
-      const axiosError = { message: 'Network Error' } as AxiosError
+      // Create a retryable error (network error)
+      const axiosError = createMockAxiosError('Network Error', 500)
       mockAxiosInstance.post
         .mockRejectedValueOnce(axiosError)
         .mockRejectedValueOnce(axiosError)
@@ -260,7 +261,8 @@ describe('SearchClient', () => {
         ...validConfig,
         retries: 1,
       })
-      const axiosError = { message: 'Network Error' } as AxiosError
+      // Create retryable error (server error)
+      const axiosError = createMockAxiosError('Network Error', 500)
       mockAxiosInstance.post.mockRejectedValue(axiosError)
 
       const query = new QueryBuilder().match('title', 'test')
@@ -491,9 +493,9 @@ describe('SearchClient', () => {
       const query = new QueryBuilder().matchAll()
 
       await expect(searchClient.search(query)).rejects.toMatchObject({
-        message: 'Network Error',
-        status: undefined,
-        details: undefined,
+        message: 'Bad Request',
+        status: 400,
+        details: { error: { type: 'parsing_exception' } },
       })
     })
 

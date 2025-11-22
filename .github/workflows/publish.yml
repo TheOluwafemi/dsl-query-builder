@@ -63,7 +63,7 @@ jobs:
             ## Installation
 
             ```bash
-            npm install query-composer@${{ github.ref_name }}
+            npm install search-query-builder@${{ github.ref_name }}
             ```
 
   notify:
@@ -75,5 +75,5 @@ jobs:
     steps:
       - name: Notify success
         run: |
-          echo "🎉 Successfully published query-composer@${{ github.ref_name }} to NPM!"
-          echo "📦 Package URL: https://www.npmjs.com/package/query-composer"
+          echo "🎉 Successfully published search-query-builder@${{ github.ref_name }} to NPM!"
+          echo "📦 Package URL: https://www.npmjs.com/package/search-query-builder"
