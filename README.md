@@ -24,14 +24,22 @@ yarn add dsl-query-builder
 ```typescript
 import { createSearchClient, createQuery } from 'dsl-query-builder'
 
-// Create a search client
+// 1. Create a client
 const client = createSearchClient({
   endpoint: 'https://your-elasticsearch.com',
-  index: 'your-index',
-  token: 'your-auth-token', // optional
+  index: 'products',
 })
 
-// Build and execute a query
+// 2. Search for products
+const results = await client.search(createQuery().match('title', 'laptop'))
+
+console.log(`Found ${results.hits.total.value} products`)
+```
+
+### More Complex Example
+
+```typescript
+// Build complex queries with chaining
 const results = await client.search(
   createQuery()
     .match('title', 'javascript')
@@ -39,8 +47,6 @@ const results = await client.search(
     .sort('createdAt', 'desc')
     .size(20)
 )
-
-console.log(results.hits.hits) // Your search results
 ```
 
 ## Query Builder API
@@ -62,21 +68,23 @@ const query = createQuery()
 ### Multi-field Search
 
 ```typescript
+// Search across multiple fields (e.g., search in both title and description)
 const query = createQuery().multiMatch(
   ['title', 'description'],
   'search term',
-  'best_fields'
+  'best_fields' // Scoring strategy
 )
 ```
 
 ### Boolean Logic
 
 ```typescript
+// Find electronics that are either Apple OR Samsung, but NOT discontinued
 const query = createQuery()
-  .match('category', 'electronics')
-  .should((q) => q.term('brand', 'apple').term('brand', 'samsung'))
+  .match('category', 'electronics') // Must match
+  .should((q) => q.term('brand', 'apple').term('brand', 'samsung')) // At least one should match
   .minimumShouldMatch(1)
-  .mustNot((q) => q.term('status', 'discontinued'))
+  .mustNot((q) => q.term('status', 'discontinued')) // Must NOT match
 ```
 
 ### Sorting & Pagination
@@ -93,11 +101,12 @@ const query = createQuery()
 ### Aggregations
 
 ```typescript
+// Get products with analytics: top brands, sales over time, average price
 const query = createQuery()
   .match('category', 'products')
-  .termsAgg('brands', 'brand.keyword', 10)
-  .dateHistogramAgg('sales_over_time', 'createdAt', '1M', 'yyyy-MM')
-  .aggregate('avg_price', { avg: { field: 'price' } })
+  .termsAgg('brands', 'brand.keyword', 10) // Top 10 brands
+  .dateHistogramAgg('sales_over_time', 'createdAt', '1M', 'yyyy-MM') // Monthly sales
+  .aggregate('avg_price', { avg: { field: 'price' } }) // Average price
 ```
 
 ### Source Filtering & Highlighting
@@ -148,15 +157,49 @@ const [products, users, orders] = await client.msearch([
 ### State Management
 
 ```typescript
-// Subscribe to search state changes
+// Basic subscription
 const unsubscribe = client.subscribe((state) => {
-  if (state.loading) console.log('Searching...')
-  if (state.data) console.log('Results:', state.data)
-  if (state.error) console.log('Error:', state.error)
+  if (state.loading) showSpinner()
+  if (state.data) displayResults(state.data)
+  if (state.error) showError(state.error.message)
 })
 
 // Get current state
 const currentState = client.getState()
+```
+
+### React Integration
+
+```typescript
+const [searchState, setSearchState] = useState(client.getState())
+
+useEffect(() => {
+  const unsubscribe = client.subscribe(setSearchState)
+  return unsubscribe
+}, [])
+
+return (
+  <div>
+    {searchState.loading && <div>Loading...</div>}
+    {searchState.data && <Results data={searchState.data} />}
+    {searchState.error && <div>Error: {searchState.error.message}</div>}
+  </div>
+)
+```
+
+### Vue Integration
+
+```typescript
+// In your Vue component
+const searchState = reactive(client.getState())
+
+onMounted(() => {
+  client.subscribe((newState) => {
+    Object.assign(searchState, newState)
+  })
+})
+
+// Template automatically updates when searchState changes
 ```
 
 ### Dynamic Configuration
@@ -167,17 +210,35 @@ client.setIndex('different-index').setToken('new-auth-token')
 
 ## Configuration
 
+### Basic Setup
+
 ```typescript
 const client = createSearchClient({
   endpoint: 'https://elasticsearch.example.com', // Required
-  index: 'default-index', // Optional
-  token: 'bearer-token', // Optional
-  retries: 3, // Default: 3
-  timeout: 30000, // Default: 30s
-  headers: {
-    // Optional
-    'Custom-Header': 'value',
-  },
+  index: 'my-index', // Optional default index
+})
+```
+
+### With Authentication
+
+```typescript
+const client = createSearchClient({
+  endpoint: 'https://elasticsearch.example.com',
+  index: 'my-index',
+  token: 'bearer-token', // API token
+})
+```
+
+### Advanced Options
+
+```typescript
+const client = createSearchClient({
+  endpoint: 'https://elasticsearch.example.com',
+  index: 'my-index',
+  token: 'bearer-token',
+  retries: 3, // Retry failed requests
+  timeout: 5000, // 5 second timeout
+  headers: { 'Custom-Header': 'value' },
 })
 ```
 
