@@ -1,24 +1,31 @@
-name: Publish to NPM
+name: Semantic Release
 
 on:
   push:
-    tags:
-      - 'v*.*.*'
+    branches: [main, master, develop, beta]
 
 jobs:
-  publish:
-    name: Publish Package
+  release:
     runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+      id-token: write
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20.x'
-          registry-url: 'https://registry.npmjs.org'
           cache: 'npm'
 
       - name: Install dependencies
@@ -36,44 +43,8 @@ jobs:
       - name: Build package
         run: npm run build
 
-      - name: Verify build artifacts
-        run: |
-          ls -la dist/
-          node -e "console.log('Testing require:', require('./dist/index.js'))"
-
-      - name: Publish to NPM
-        run: npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Create GitHub Release
-        uses: actions/create-release@v1
+      - name: Semantic Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          draft: false
-          prerelease: false
-          body: |
-            ## Changes in this Release
-
-            Please see the [CHANGELOG.md](CHANGELOG.md) for detailed changes.
-
-            ## Installation
-
-            ```bash
-            npm install search-query-builder@${{ github.ref_name }}
-            ```
-
-  notify:
-    name: Notify Success
-    runs-on: ubuntu-latest
-    needs: publish
-    if: success()
-
-    steps:
-      - name: Notify success
-        run: |
-          echo "🎉 Successfully published search-query-builder@${{ github.ref_name }} to NPM!"
-          echo "📦 Package URL: https://www.npmjs.com/package/search-query-builder"
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npx semantic-release
