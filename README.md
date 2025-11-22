@@ -14,15 +14,15 @@ A fluent TypeScript query builder for OpenSearch/Elasticsearch DSL with built-in
 ## Installation
 
 ```bash
-npm install query-composer
+npm install search-query-builder
 # or
-yarn add query-composer
+yarn add search-query-builder
 ```
 
 ## Quick Start
 
 ```typescript
-import { createSearchClient, createQuery } from 'query-composer'
+import { createSearchClient, createQuery } from 'search-query-builder'
 
 // Create a search client
 const client = createSearchClient({
