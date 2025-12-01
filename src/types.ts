@@ -2,6 +2,7 @@ export interface SearchConfig {
   endpoint: string
   index?: string
   token?: string
+  tokenType?: 'bearer' | 'raw'
   retries?: number
   timeout?: number
   headers?: Record<string, string>
@@ -13,6 +14,7 @@ export interface ResolvedSearchConfig {
   endpoint: string
   index: string
   token: string
+  tokenType: 'bearer' | 'raw'
   retries: number
   timeout: number
   headers: Record<string, string>

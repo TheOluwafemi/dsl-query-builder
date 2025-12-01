@@ -32,6 +32,7 @@ export class SearchClient {
       endpoint: config.endpoint,
       index: config.index || '',
       token: config.token || '',
+      tokenType: config.tokenType || 'bearer',
       retries: config.retries || 3,
       timeout: config.timeout || 5000,
       headers: config.headers || {},
@@ -39,15 +40,20 @@ export class SearchClient {
         config.responseTransformer || ((response) => response),
     }
 
+    // Build authorization header based on tokenType
+    const authHeaders = this.config.token
+      ? this.config.tokenType === 'bearer'
+        ? { Authorization: `Bearer ${this.config.token}` }
+        : { Authorization: this.config.token }
+      : {}
+
     this.axiosInstance = axios.create({
       baseURL: this.config.endpoint,
       timeout: this.config.timeout,
       headers: {
         'Content-Type': 'application/json',
         ...this.config.headers,
-        ...(this.config.token && {
-          Authorization: `Bearer ${this.config.token}`,
-        }),
+        ...authHeaders,
       },
     })
   }
@@ -179,9 +185,9 @@ export class SearchClient {
    */
   setToken(token: string): this {
     this.config.token = token
-    this.axiosInstance.defaults.headers.common[
-      'Authorization'
-    ] = `Bearer ${token}`
+    const authValue =
+      this.config.tokenType === 'bearer' ? `Bearer ${token}` : token
+    this.axiosInstance.defaults.headers.common['Authorization'] = authValue
     return this
   }
 

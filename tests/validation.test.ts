@@ -109,6 +109,43 @@ describe('Validation', () => {
         })
       ).toThrow()
     })
+
+    it('should validate tokenType', () => {
+      // Valid tokenTypes
+      expect(() =>
+        validateSearchConfig({
+          endpoint: 'https://test.com',
+          tokenType: 'bearer',
+        })
+      ).not.toThrow()
+
+      expect(() =>
+        validateSearchConfig({
+          endpoint: 'https://test.com',
+          tokenType: 'raw',
+        })
+      ).not.toThrow()
+
+      // Invalid tokenType
+      expect(() =>
+        validateSearchConfig({
+          endpoint: 'https://test.com',
+          tokenType: 'invalid',
+        })
+      ).toThrow(
+        new ValidationError(
+          'tokenType must be either "bearer" or "raw"',
+          'tokenType'
+        )
+      )
+
+      expect(() =>
+        validateSearchConfig({
+          endpoint: 'https://test.com',
+          tokenType: 123,
+        })
+      ).toThrow()
+    })
   })
 
   describe('validateRangeQuery', () => {

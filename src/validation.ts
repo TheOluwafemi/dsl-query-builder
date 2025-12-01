@@ -43,6 +43,17 @@ export function validateSearchConfig(config: any): void {
   ) {
     throw new ValidationError('timeout must be a positive integer', 'timeout')
   }
+
+  if (
+    config.tokenType !== undefined &&
+    (typeof config.tokenType !== 'string' ||
+      !['bearer', 'raw'].includes(config.tokenType))
+  ) {
+    throw new ValidationError(
+      'tokenType must be either "bearer" or "raw"',
+      'tokenType'
+    )
+  }
 }
 
 export function validateRangeQuery(range: any): void {

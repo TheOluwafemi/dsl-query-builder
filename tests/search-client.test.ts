@@ -95,6 +95,42 @@ describe('SearchClient', () => {
       })
     })
 
+    it('should create client with bearer token type (default)', () => {
+      const config = {
+        endpoint: 'https://elasticsearch.example.com',
+        token: 'test-token',
+        tokenType: 'bearer' as const,
+      }
+      new SearchClient(config)
+
+      expect(mockAxios.create).toHaveBeenCalledWith({
+        baseURL: 'https://elasticsearch.example.com',
+        timeout: 5000,
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer test-token',
+        },
+      })
+    })
+
+    it('should create client with raw token type', () => {
+      const config = {
+        endpoint: 'https://elasticsearch.example.com',
+        token: 'raw-auth-token',
+        tokenType: 'raw' as const,
+      }
+      new SearchClient(config)
+
+      expect(mockAxios.create).toHaveBeenCalledWith({
+        baseURL: 'https://elasticsearch.example.com',
+        timeout: 5000,
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'raw-auth-token',
+        },
+      })
+    })
+
     it('should validate config on construction', () => {
       expect(() => new SearchClient({} as any)).toThrow(ValidationError)
       expect(() => new SearchClient({ endpoint: '' })).toThrow(ValidationError)
@@ -473,6 +509,19 @@ describe('SearchClient', () => {
       expect(result).toBe(searchClient) // Should return this for chaining
       expect(mockAxiosInstance.defaults.headers.common.Authorization).toBe(
         'Bearer new-token'
+      )
+    })
+
+    it('should update token with raw tokenType', () => {
+      const rawTokenClient = new SearchClient({
+        endpoint: 'https://elasticsearch.example.com',
+        tokenType: 'raw',
+      })
+
+      const result = rawTokenClient.setToken('raw-token-value')
+      expect(result).toBe(rawTokenClient)
+      expect(mockAxiosInstance.defaults.headers.common.Authorization).toBe(
+        'raw-token-value'
       )
     })
 
