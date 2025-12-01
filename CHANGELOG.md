@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/TheOluwafemi/dsl-query-builder/compare/v1.2.0...v1.3.0) (2025-12-01)
+
+
+### Features
+
+* add configurable token authentication types ([9d758b4](https://github.com/TheOluwafemi/dsl-query-builder/commit/9d758b4852995c44d4d59f4432ffcb92bfc6534c))
+
 # [1.2.0](https://github.com/TheOluwafemi/dsl-query-builder/compare/v1.1.0...v1.2.0) (2025-12-01)
 
 
