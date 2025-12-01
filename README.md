@@ -7,6 +7,7 @@ A fluent TypeScript query builder for OpenSearch/Elasticsearch DSL with built-in
 - 🏗️ **Fluent Query Builder** - Intuitive, chainable API for building complex queries
 - 🔒 **Type Safety** - Full TypeScript support with generic types for your document schemas
 - 🚀 **Built-in Client** - HTTP client with retry logic, state management, and multi-search support
+- 🌐 **Proxy Service Support** - Works with enterprise proxy services that handle index routing
 - 📦 **Zero Config** - Works out of the box with sensible defaults
 - 🔄 **Observable State** - React to search state changes for UI integration
 - ⚡ **Performance** - Supports bulk operations and optimized query building
@@ -46,6 +47,25 @@ const results = await client.search(
     .range('price', { gte: 10, lte: 100 })
     .sort('createdAt', 'desc')
     .size(20)
+)
+```
+
+### Proxy Service Support
+
+```typescript
+// For enterprises with proxy services that handle index routing
+const client = createSearchClient({
+  endpoint: 'https://your-proxy-service.com',
+  // No index specified - requests go directly to /_search
+})
+
+// Searches will use /_search endpoint
+const results = await client.search(createQuery().match('title', 'search term'))
+
+// You can also specify index per search if needed
+const specificResults = await client.search(
+  createQuery().match('title', 'search term'),
+  'specific-index'
 )
 ```
 
@@ -213,9 +233,16 @@ client.setIndex('different-index').setToken('new-auth-token')
 ### Basic Setup
 
 ```typescript
+// With a default index
 const client = createSearchClient({
   endpoint: 'https://elasticsearch.example.com', // Required
   index: 'my-index', // Optional default index
+})
+
+// Without index (for proxy services)
+const proxyClient = createSearchClient({
+  endpoint: 'https://your-proxy-service.com', // Required
+  // No index - uses /_search endpoint
 })
 ```
 
@@ -240,6 +267,31 @@ const client = createSearchClient({
   timeout: 5000, // 5 second timeout
   headers: { 'Custom-Header': 'value' },
 })
+```
+
+### Proxy Service Configuration
+
+For enterprise environments with proxy services that handle Elasticsearch routing:
+
+```typescript
+// Proxy service setup - no index required
+const client = createSearchClient({
+  endpoint: 'https://your-internal-proxy.company.com',
+  token: 'your-auth-token',
+  headers: {
+    'X-Company-Auth': 'internal-token',
+    'X-Service-Name': 'my-app',
+  },
+})
+
+// All searches go directly to /_search
+const results = await client.search(createQuery().match('field', 'value'))
+
+// Per-request index override still supported
+const specificResults = await client.search(
+  createQuery().match('field', 'value'),
+  'specific-index' // Uses /specific-index/_search
+)
 ```
 
 ## TypeScript Support

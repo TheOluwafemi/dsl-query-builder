@@ -63,13 +63,11 @@ export class SearchClient {
     index?: string
   ): Promise<SearchResponse<T>> {
     const searchIndex = index || this.config.index
-    if (!searchIndex) {
-      throw new Error(
-        'Index must be specified either in config or search method'
-      )
-    }
 
-    validateIndexName(searchIndex, 'search method')
+    // If index is provided, validate it
+    if (searchIndex) {
+      validateIndexName(searchIndex, 'search method')
+    }
 
     const dsl = query instanceof QueryBuilder ? query.build() : query
 
@@ -79,8 +77,11 @@ export class SearchClient {
 
     for (let attempt = 0; attempt <= this.config.retries; attempt++) {
       try {
+        // Build path: use index if provided, otherwise go directly to endpoint
+        const path = searchIndex ? `/${searchIndex}/_search` : '/_search'
+
         const response = await this.axiosInstance.post<SearchResponse<T>>(
-          `/${searchIndex}/_search`,
+          path,
           dsl
         )
 
@@ -117,22 +118,20 @@ export class SearchClient {
    */
   async count(query: QueryBuilder | QueryDSL, index?: string): Promise<number> {
     const searchIndex = index || this.config.index
-    if (!searchIndex) {
-      throw new Error(
-        'Index must be specified either in config or count method'
-      )
-    }
 
-    validateIndexName(searchIndex, 'count method')
+    // If index is provided, validate it
+    if (searchIndex) {
+      validateIndexName(searchIndex, 'count method')
+    }
 
     const dsl = query instanceof QueryBuilder ? query.build() : query
     const countQuery = { query: dsl.query }
 
     try {
-      const response = await this.axiosInstance.post(
-        `/${searchIndex}/_count`,
-        countQuery
-      )
+      // Build path: use index if provided, otherwise go directly to endpoint
+      const path = searchIndex ? `/${searchIndex}/_count` : '/_count'
+
+      const response = await this.axiosInstance.post(path, countQuery)
       return response.data.count
     } catch (error) {
       throw this.handleError(error as AxiosError)

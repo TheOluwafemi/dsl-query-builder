@@ -184,15 +184,21 @@ describe('SearchClient', () => {
       )
     })
 
-    it('should throw error when no index specified', async () => {
+    it('should execute search without index (direct to endpoint)', async () => {
+      mockAxiosInstance.post.mockResolvedValueOnce({ data: mockSearchResponse })
+
       const clientWithoutIndex = new SearchClient({
-        endpoint: 'https://test.com',
+        endpoint: 'https://my-search-service.com',
       })
       const query = new QueryBuilder().match('title', 'test')
 
-      await expect(clientWithoutIndex.search(query)).rejects.toThrow(
-        'Index must be specified either in config or search method'
+      const result = await clientWithoutIndex.search(query)
+
+      expect(mockAxiosInstance.post).toHaveBeenCalledWith(
+        '/_search',
+        query.build()
       )
+      expect(result).toEqual(mockSearchResponse)
     })
 
     it('should update state during search', async () => {
@@ -525,7 +531,9 @@ describe('SearchClient', () => {
 
       expect(mockAxiosInstance.post).toHaveBeenCalledWith(
         '/test-index/_search',
-        { query: { match_all: {} } }
+        {
+          query: { match_all: {} },
+        }
       )
     })
 
