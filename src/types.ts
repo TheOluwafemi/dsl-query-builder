@@ -5,8 +5,21 @@ export interface SearchConfig {
   retries?: number
   timeout?: number
   headers?: Record<string, string>
+  responseTransformer?: <T>(response: any) => SearchResponse<T>
 }
 
+// Internal config with all optional fields resolved
+export interface ResolvedSearchConfig {
+  endpoint: string
+  index: string
+  token: string
+  retries: number
+  timeout: number
+  headers: Record<string, string>
+  responseTransformer: <T>(response: any) => SearchResponse<T>
+}
+
+// Standard Elasticsearch response structure
 export interface SearchResponse<T = any> {
   took: number
   timed_out: boolean
@@ -32,6 +45,9 @@ export interface SearchResponse<T = any> {
   aggregations?: Record<string, any>
 }
 
+// Flexible response that can accommodate proxy service variations
+export type FlexibleSearchResponse<T = any> = SearchResponse<T> | any
+
 export interface SearchError {
   message: string
   status?: number
@@ -39,7 +55,7 @@ export interface SearchError {
 }
 
 export interface SearchState<T = any> {
-  data: SearchResponse<T> | null
+  data: FlexibleSearchResponse<T> | null
   error: SearchError | null
   loading: boolean
 }

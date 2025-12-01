@@ -2,7 +2,9 @@ import axios, { AxiosInstance, AxiosError } from 'axios'
 import { QueryBuilder } from './query-builder'
 import {
   SearchConfig,
+  ResolvedSearchConfig,
   SearchResponse,
+  FlexibleSearchResponse,
   SearchError,
   SearchState,
   QueryDSL,
@@ -14,7 +16,7 @@ import {
 } from './validation'
 
 export class SearchClient {
-  private config: Required<SearchConfig>
+  private config: ResolvedSearchConfig
   private axiosInstance: AxiosInstance
   private state: SearchState = {
     data: null,
@@ -33,6 +35,8 @@ export class SearchClient {
       retries: config.retries || 3,
       timeout: config.timeout || 5000,
       headers: config.headers || {},
+      responseTransformer:
+        config.responseTransformer || ((response) => response),
     }
 
     this.axiosInstance = axios.create({
@@ -48,6 +52,14 @@ export class SearchClient {
     })
   }
 
+  private transformResponse<T>(response: any): SearchResponse<T> {
+    if (this.config.responseTransformer) {
+      return this.config.responseTransformer<T>(response)
+    }
+    // Return as-is for standard Elasticsearch responses
+    return response
+  }
+
   /**
    * Create a new query builder instance
    */
@@ -61,7 +73,7 @@ export class SearchClient {
   async search<T = any>(
     query: QueryBuilder | QueryDSL,
     index?: string
-  ): Promise<SearchResponse<T>> {
+  ): Promise<FlexibleSearchResponse<T>> {
     const searchIndex = index || this.config.index
 
     // If index is provided, validate it
@@ -80,13 +92,11 @@ export class SearchClient {
         // Build path: use index if provided, otherwise go directly to endpoint
         const path = searchIndex ? `/${searchIndex}/_search` : '/_search'
 
-        const response = await this.axiosInstance.post<SearchResponse<T>>(
-          path,
-          dsl
-        )
+        const response = await this.axiosInstance.post<any>(path, dsl)
 
-        this.updateState({ data: response.data, loading: false, error: null })
-        return response.data
+        const transformedData = this.transformResponse<T>(response.data)
+        this.updateState({ data: transformedData, loading: false, error: null })
+        return transformedData
       } catch (error) {
         lastError = this.handleError(error as AxiosError)
 
@@ -180,7 +190,7 @@ export class SearchClient {
    */
   async msearch<T = any>(
     searches: Array<{ index?: string; query: QueryBuilder | QueryDSL }>
-  ): Promise<SearchResponse<T>[]> {
+  ): Promise<FlexibleSearchResponse<T>[]> {
     validateMsearchQueries(searches)
 
     const body = searches.flatMap((search) => [
@@ -199,7 +209,12 @@ export class SearchClient {
         }
       )
 
-      return response.data.responses
+      // Transform each response if transformer is provided
+      const transformedResponses = response.data.responses.map((resp: any) =>
+        this.transformResponse<T>(resp)
+      )
+
+      return transformedResponses
     } catch (error) {
       throw this.handleError(error as AxiosError)
     }

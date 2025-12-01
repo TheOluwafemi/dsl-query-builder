@@ -69,6 +69,23 @@ const specificResults = await client.search(
 )
 ```
 
+### Custom Response Transformation
+
+```typescript
+import { createSearchClient, ResponseTransformers } from 'dsl-query-builder'
+
+// If your proxy service returns a different response format
+const client = createSearchClient({
+  endpoint: 'https://your-proxy-service.com',
+  responseTransformer: ResponseTransformers.fromSimplified,
+})
+
+// Now the client will transform responses like:
+// { results: [...], total: 100 } -> standard Elasticsearch format
+const results = await client.search(createQuery().match('title', 'laptop'))
+// results.hits.hits will work as expected
+```
+
 ## Query Builder API
 
 ### Basic Queries
@@ -274,7 +291,7 @@ const client = createSearchClient({
 For enterprise environments with proxy services that handle Elasticsearch routing:
 
 ```typescript
-// Proxy service setup - no index required
+// Standard proxy service (returns Elasticsearch-compatible responses)
 const client = createSearchClient({
   endpoint: 'https://your-internal-proxy.company.com',
   token: 'your-auth-token',
@@ -282,6 +299,16 @@ const client = createSearchClient({
     'X-Company-Auth': 'internal-token',
     'X-Service-Name': 'my-app',
   },
+})
+
+// Custom proxy service with response transformation
+import { ResponseTransformers } from 'dsl-query-builder'
+
+const customClient = createSearchClient({
+  endpoint: 'https://custom-search-api.company.com',
+  token: 'your-auth-token',
+  responseTransformer: ResponseTransformers.fromSimplified,
+  // Transforms: { results: [...], total: 100 } -> standard ES format
 })
 
 // All searches go directly to /_search
@@ -292,6 +319,35 @@ const specificResults = await client.search(
   createQuery().match('field', 'value'),
   'specific-index' // Uses /specific-index/_search
 )
+```
+
+### Custom Response Transformers
+
+```typescript
+// Create your own transformer for unique response formats
+const customTransformer = <T>(response: any) => {
+  return {
+    took: response.timing?.duration || 0,
+    timed_out: false,
+    _shards: { total: 1, successful: 1, skipped: 0, failed: 0 },
+    hits: {
+      total: { value: response.meta?.total || 0, relation: 'eq' },
+      max_score: null,
+      hits: response.items.map((item: any, index: number) => ({
+        _index: 'api-results',
+        _id: item.uuid || String(index),
+        _score: 1.0,
+        _source: item as T,
+      })),
+    },
+    aggregations: response.facets,
+  }
+}
+
+const client = createSearchClient({
+  endpoint: 'https://your-api.com',
+  responseTransformer: customTransformer,
+})
 ```
 
 ## TypeScript Support
@@ -315,12 +371,19 @@ const results = await client.search<BlogPost>(
   createQuery().match('title', 'typescript').term('author.name', 'John Doe')
 )
 
-// Full type safety
+// Full type safety with standard Elasticsearch responses
 results.hits.hits.forEach((hit) => {
   const post = hit._source // TypeScript knows this is BlogPost
   console.log(post.title) // ✅ Type safe
   console.log(post.author.name) // ✅ Type safe
   // console.log(post.foo); // ❌ TypeScript error
+})
+
+// For proxy services with custom response formats
+// The response transformer ensures hits.hits is always available
+results.hits.hits.forEach((hit) => {
+  const post = hit._source // Still type-safe after transformation
+  console.log(post.title) // ✅ Works regardless of original response format
 })
 ```
 
@@ -337,6 +400,65 @@ try {
 ```
 
 ## Advanced Usage
+
+### Proxy Service Examples
+
+```typescript
+import {
+  createSearchClient,
+  createQuery,
+  ResponseTransformers,
+} from 'dsl-query-builder'
+
+// Example 1: Enterprise API that returns simplified results
+const enterpriseClient = createSearchClient({
+  endpoint: 'https://search-api.company.com',
+  token: 'enterprise-token',
+  responseTransformer: ResponseTransformers.fromSimplified,
+})
+
+// API returns: { results: [...], total: 100 }
+// Library transforms to: { hits: { hits: [...], total: { value: 100 } } }
+const results = await enterpriseClient.search(
+  createQuery().match('title', 'quarterly report')
+)
+
+// Example 2: Microservice with nested response structure
+const microserviceClient = createSearchClient({
+  endpoint: 'https://content-service.company.com',
+  responseTransformer: ResponseTransformers.fromNested,
+})
+
+// API returns: { data: { items: [...], metadata: { total: 50 } } }
+const contentResults = await microserviceClient.search(
+  createQuery().match('content', 'user manual')
+)
+
+// Example 3: Custom transformation for unique response format
+const customClient = createSearchClient({
+  endpoint: 'https://legacy-search.company.com',
+  responseTransformer: <T>(response: any) => ({
+    took: response.queryTime || 0,
+    timed_out: false,
+    _shards: { total: 1, successful: 1, skipped: 0, failed: 0 },
+    hits: {
+      total: { value: response.recordCount || 0, relation: 'eq' },
+      max_score: null,
+      hits: (response.records || []).map((record: any, index: number) => ({
+        _index: 'legacy',
+        _id: record.recordId || String(index),
+        _score: 1.0,
+        _source: record as T,
+      })),
+    },
+  }),
+})
+
+// Works with any response format after transformation
+customResults.hits.hits.forEach((hit) => {
+  console.log(hit._source) // Always works regardless of original API format
+})
+```
 
 ### Raw Queries
 
