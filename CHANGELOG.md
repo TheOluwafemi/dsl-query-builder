@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/TheOluwafemi/dsl-query-builder/compare/v1.1.0...v1.2.0) (2025-12-01)
+
+
+### Features
+
+* support direct endpoint usage without automatic path suffixes ([c22669d](https://github.com/TheOluwafemi/dsl-query-builder/commit/c22669df57cd99bdefed197102471e623d9af308))
+
 # [1.1.0](https://github.com/TheOluwafemi/dsl-query-builder/compare/v1.0.2...v1.1.0) (2025-12-01)
 
 
