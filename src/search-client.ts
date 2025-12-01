@@ -89,8 +89,8 @@ export class SearchClient {
 
     for (let attempt = 0; attempt <= this.config.retries; attempt++) {
       try {
-        // Build path: use index if provided, otherwise go directly to endpoint
-        const path = searchIndex ? `/${searchIndex}/_search` : '/_search'
+        // Use index as path if provided, otherwise use root endpoint
+        const path = searchIndex ? `/${searchIndex}` : ''
 
         const response = await this.axiosInstance.post<any>(path, dsl)
 
@@ -138,8 +138,8 @@ export class SearchClient {
     const countQuery = { query: dsl.query }
 
     try {
-      // Build path: use index if provided, otherwise go directly to endpoint
-      const path = searchIndex ? `/${searchIndex}/_count` : '/_count'
+      // Use index as path if provided, otherwise use root endpoint
+      const path = searchIndex ? `/${searchIndex}` : ''
 
       const response = await this.axiosInstance.post(path, countQuery)
       return response.data.count
@@ -202,7 +202,7 @@ export class SearchClient {
 
     try {
       const response = await this.axiosInstance.post(
-        '/_msearch',
+        '',
         body.map((item) => JSON.stringify(item)).join('\n') + '\n',
         {
           headers: { 'Content-Type': 'application/x-ndjson' },

@@ -153,7 +153,7 @@ describe('SearchClient', () => {
       const result = await searchClient.search(query)
 
       expect(mockAxiosInstance.post).toHaveBeenCalledWith(
-        '/test-index/_search',
+        '/test-index',
         query.build()
       )
       expect(result).toEqual(mockSearchResponse)
@@ -166,7 +166,7 @@ describe('SearchClient', () => {
       const result = await searchClient.search(queryDSL)
 
       expect(mockAxiosInstance.post).toHaveBeenCalledWith(
-        '/test-index/_search',
+        '/test-index',
         queryDSL
       )
       expect(result).toEqual(mockSearchResponse)
@@ -179,7 +179,7 @@ describe('SearchClient', () => {
       await searchClient.search(query, 'custom-index')
 
       expect(mockAxiosInstance.post).toHaveBeenCalledWith(
-        '/custom-index/_search',
+        '/custom-index',
         query.build()
       )
     })
@@ -194,10 +194,7 @@ describe('SearchClient', () => {
 
       const result = await clientWithoutIndex.search(query)
 
-      expect(mockAxiosInstance.post).toHaveBeenCalledWith(
-        '/_search',
-        query.build()
-      )
+      expect(mockAxiosInstance.post).toHaveBeenCalledWith('', query.build())
       expect(result).toEqual(mockSearchResponse)
     })
 
@@ -311,10 +308,9 @@ describe('SearchClient', () => {
       const query = new QueryBuilder().match('title', 'test')
       const result = await searchClient.count(query)
 
-      expect(mockAxiosInstance.post).toHaveBeenCalledWith(
-        '/test-index/_count',
-        { query: query.build().query }
-      )
+      expect(mockAxiosInstance.post).toHaveBeenCalledWith('/test-index', {
+        query: query.build().query,
+      })
       expect(result).toBe(42)
     })
 
@@ -324,10 +320,9 @@ describe('SearchClient', () => {
       const query = new QueryBuilder().match('title', 'test')
       await searchClient.count(query, 'custom-index')
 
-      expect(mockAxiosInstance.post).toHaveBeenCalledWith(
-        '/custom-index/_count',
-        { query: query.build().query }
-      )
+      expect(mockAxiosInstance.post).toHaveBeenCalledWith('/custom-index', {
+        query: query.build().query,
+      })
     })
 
     it('should handle count errors', async () => {
@@ -363,7 +358,7 @@ describe('SearchClient', () => {
       const result = await searchClient.msearch(searches)
 
       expect(mockAxiosInstance.post).toHaveBeenCalledWith(
-        '/_msearch',
+        '',
         expect.stringContaining('{"index":"index1"}'),
         { headers: { 'Content-Type': 'application/x-ndjson' } }
       )
@@ -529,12 +524,9 @@ describe('SearchClient', () => {
       const emptyQuery = new QueryBuilder()
       await searchClient.search(emptyQuery)
 
-      expect(mockAxiosInstance.post).toHaveBeenCalledWith(
-        '/test-index/_search',
-        {
-          query: { match_all: {} },
-        }
-      )
+      expect(mockAxiosInstance.post).toHaveBeenCalledWith('/test-index', {
+        query: { match_all: {} },
+      })
     })
 
     it('should handle complex nested queries', async () => {
@@ -558,7 +550,7 @@ describe('SearchClient', () => {
 
       const expectedQuery = complexQuery.build()
       expect(mockAxiosInstance.post).toHaveBeenCalledWith(
-        '/test-index/_search',
+        '/test-index',
         expectedQuery
       )
     })

@@ -56,10 +56,10 @@ const results = await client.search(
 // For enterprises with proxy services that handle index routing
 const client = createSearchClient({
   endpoint: 'https://your-proxy-service.com',
-  // No index specified - requests go directly to /_search
+  // No index specified - requests go directly to the endpoint
 })
 
-// Searches will use /_search endpoint
+// Searches will use the endpoint directly
 const results = await client.search(createQuery().match('title', 'search term'))
 
 // You can also specify index per search if needed
@@ -259,7 +259,7 @@ const client = createSearchClient({
 // Without index (for proxy services)
 const proxyClient = createSearchClient({
   endpoint: 'https://your-proxy-service.com', // Required
-  // No index - uses /_search endpoint
+  // No index - uses the endpoint directly
 })
 ```
 
@@ -311,13 +311,13 @@ const customClient = createSearchClient({
   // Transforms: { results: [...], total: 100 } -> standard ES format
 })
 
-// All searches go directly to /_search
+// All searches go directly to the endpoint
 const results = await client.search(createQuery().match('field', 'value'))
 
 // Per-request index override still supported
 const specificResults = await client.search(
   createQuery().match('field', 'value'),
-  'specific-index' // Uses /specific-index/_search
+  'specific-index' // Uses /specific-index endpoint
 )
 ```
 

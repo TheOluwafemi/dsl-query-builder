@@ -115,7 +115,7 @@ describe('Integration Tests', () => {
       // Verify the query was built correctly
       const expectedQuery = query.build()
       expect(mockAxiosInstance.post).toHaveBeenCalledWith(
-        '/products/_search',
+        '/products',
         expectedQuery
       )
     })
@@ -279,7 +279,7 @@ describe('Integration Tests', () => {
       expect(results.hits.total.value).toBe(50)
       expect(results.aggregations).toBeDefined()
       expect(mockAxiosInstance.post).toHaveBeenCalledWith(
-        '/products/_search',
+        '/products',
         searchQuery.build()
       )
     })
@@ -354,7 +354,7 @@ describe('Integration Tests', () => {
       await client.search(createQuery().matchAll())
 
       expect(mockAxiosInstance.post).toHaveBeenCalledWith(
-        '/new-index/_search',
+        '/new-index',
         expect.any(Object)
       )
       expect(mockAxiosInstance.defaults.headers.common.Authorization).toBe(
