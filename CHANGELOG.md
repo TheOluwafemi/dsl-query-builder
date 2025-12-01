@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/TheOluwafemi/dsl-query-builder/compare/v1.3.0...v1.4.0) (2025-12-01)
+
+
+### Features
+
+* enhance validation system with comprehensive error tracking ([2c8b8b4](https://github.com/TheOluwafemi/dsl-query-builder/commit/2c8b8b4ecb4098b368890c2f997a1e61a520fb82))
+
 # [1.3.0](https://github.com/TheOluwafemi/dsl-query-builder/compare/v1.2.0...v1.3.0) (2025-12-01)
 
 
