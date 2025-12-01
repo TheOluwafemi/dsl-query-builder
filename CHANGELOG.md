@@ -1,3 +1,11 @@
+# [1.1.0](https://github.com/TheOluwafemi/dsl-query-builder/compare/v1.0.2...v1.1.0) (2025-12-01)
+
+
+### Features
+
+* add response transformation support for proxy services ([b9e29fe](https://github.com/TheOluwafemi/dsl-query-builder/commit/b9e29fe899165929b450e6748a7d7cf5661f07b3))
+* add support for proxy services and improve search client index handling ([4a54267](https://github.com/TheOluwafemi/dsl-query-builder/commit/4a54267ff17f10aa029a02d4e524c61274251b96))
+
 ## [1.0.2](https://github.com/TheOluwafemi/dsl-query-builder/compare/v1.0.1...v1.0.2) (2025-11-22)
 
 
