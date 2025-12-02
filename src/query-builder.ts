@@ -1,11 +1,4 @@
-import {
-  QueryDSL,
-  SortOrder,
-  SortOption,
-  RangeQuery,
-  FuzzyQuery,
-  GeoPoint,
-} from './types'
+import { QueryDSL, SortOrder, SortOption, RangeQuery } from './types'
 import {
   validateFieldName,
   validateQueryValue,
@@ -843,7 +836,7 @@ export class QueryBuilder {
    * Add explain flag
    */
   explain(): this {
-    ;(this.query as any).explain = true
+    (this.query as any).explain = true
     return this
   }
 
@@ -851,7 +844,7 @@ export class QueryBuilder {
    * Add profiling
    */
   profile(): this {
-    ;(this.query as any).profile = true
+    (this.query as any).profile = true
     return this
   }
 
