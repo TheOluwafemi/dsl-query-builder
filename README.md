@@ -11,6 +11,25 @@
 - 🔧 **Universal**: Works with ANY HTTP client (fetch, axios, ky, etc.)
 - 🌟 **Enhanced**: Advanced queries, geo search, nested queries, and more
 
+## 🚀 Quick Reference
+
+| Category        | Method              | Example                                            |
+| --------------- | ------------------- | -------------------------------------------------- |
+| **Text Search** | `match()`           | `query.match('title', 'javascript')`               |
+|                 | `matchPhrase()`     | `query.matchPhrase('title', 'getting started')`    |
+|                 | `multiMatch()`      | `query.multiMatch(['title', 'content'], 'search')` |
+| **Exact Match** | `term()`            | `query.term('status', 'published')`                |
+|                 | `terms()`           | `query.terms('tags', ['js', 'react'])`             |
+|                 | `range()`           | `query.range('price', { gte: 10, lte: 100 })`      |
+| **Patterns**    | `wildcard()`        | `query.wildcard('filename', '*.js')`               |
+|                 | `prefix()`          | `query.prefix('title', 'getting')`                 |
+|                 | `fuzzy()`           | `query.fuzzy('title', 'javscript')`                |
+| **Boolean**     | `should()`          | `query.should(q => q.term('category', 'tech'))`    |
+|                 | `mustNot()`         | `query.mustNot(q => q.term('status', 'draft'))`    |
+| **Geo**         | `geoDistance()`     | `query.geoDistance('location', '10km', lat, lon)`  |
+| **Control**     | `from()` / `size()` | `query.from(20).size(10)`                          |
+|                 | `sort()`            | `query.sort('createdAt', 'desc')`                  |
+
 ## 📦 Installation
 
 ```bash
@@ -30,12 +49,73 @@ const query = createQuery()
 
 const dsl = query.build()
 
-// Use with ANY HTTP client:
 const results = await fetch('/search', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify(dsl),
 }).then((r) => r.json())
+```
+
+## 🎯 Core Query Methods
+
+### Text Search
+
+```typescript
+const query = createQuery()
+  .match('title', 'javascript tutorial')
+  .match('description', 'react vue', 'and')
+  .matchPhrase('title', 'complete guide')
+  .multiMatch(['title', 'description'], 'search term', 'best_fields')
+  .wildcard('filename', '*.js')
+  .prefix('title', 'getting started')
+  .queryString('javascript AND (react OR vue)', {
+    fields: ['title', 'content'],
+    default_operator: 'AND',
+  })
+  .simpleQueryString('javascript +tutorial -deprecated')
+```
+
+### Exact Matching & Filtering
+
+```typescript
+const query = createQuery()
+  .term('status', 'published')
+  .term('category.keyword', 'programming')
+  .terms('tags', ['javascript', 'typescript', 'react'])
+  .range('price', { gte: 10, lte: 100 })
+  .range('publishedAt', { gte: 'now-30d' })
+  .exists('author')
+  .exists('featuredImage')
+```
+
+### Boolean Logic
+
+```typescript
+const query = createQuery()
+  .match('title', 'javascript')
+  .should((q) => {
+    q.term('category', 'tutorial').term('category', 'guide')
+  })
+  .minimumShouldMatch(1)
+  .mustNot((q) => {
+    q.term('status', 'draft').term('visibility', 'private')
+  })
+```
+
+### Pagination & Sorting
+
+```typescript
+const query = createQuery()
+  .match('category', 'electronics')
+  .from(20)
+  .size(10)
+  .sort('createdAt', 'desc')
+  .sort('price', 'asc')
+  .sortBy({
+    _score: { order: 'desc' },
+    popularity: { order: 'desc', missing: 0 },
+  })
+  .clearSort()
 ```
 
 ## 🔗 HTTP Client Integration
@@ -71,7 +151,7 @@ const response = await myHttpClient.post('/search', dsl)
 
 ### E-commerce Search
 
-````typescript
+```typescript
 import { createEcommerceQuery } from 'dsl-query-builder'
 
 const query = createEcommerceQuery()
@@ -79,26 +159,14 @@ const query = createEcommerceQuery()
     category: 'electronics',
     priceRange: { min: 50, max: 300 },
     brands: ['sony', 'bose'],
-    inStock: true
+    inStock: true,
   })
   .addEcommerceAggregations()
   .sortByPopularity()
   .size(24)
 
-### Log Analysis
-```typescript
-import { createLogsQuery } from 'dsl-query-builder'
-
-const query = createLogsQuery()
-  .timeRange('now-24h', 'now')
-  .logLevel('error')
-  .service('payment-service')
-  .withError('SQLException')
-  .addLogAggregations()
-  .addTimeHistogram('1h')
-
 const dsl = query.build()
-````
+```
 
 ### Analytics & Metrics
 
@@ -121,21 +189,27 @@ const dsl = query.build()
 
 ```typescript
 const query = createQuery()
-  .fuzzy('title', 'javascript', { fuzziness: 'AUTO' })
-  .regexp('tags', 'react.*')
+  .fuzzy('title', 'javscript', { fuzziness: 'AUTO', boost: 1.5 })
+  .fuzzy('description', 'tutorial', { fuzziness: 2 })
+  .regexp('tags', 'react.*', 'i')
+  .regexp('filename', '.*\\.(js|ts)$')
   .wildcard('author', 'john*')
+  .wildcard('email', '*@company.com')
+  .prefix('title', 'getting started')
 ```
 
-### Geo Queries
+### Geo-Spatial Queries
 
 ```typescript
 const query = createQuery()
   .geoDistance('location', '10km', 40.7128, -74.006)
+  .geoDistance('store_location', '5mi', 37.7749, -122.4194)
   .geoBoundingBox('location', [40.8, -74.1], [40.7, -73.9])
-  .geoPolygon('location', [
+  .geoPolygon('delivery_zone', [
     [40.8, -74.1],
     [40.8, -73.9],
     [40.7, -73.9],
+    [40.7, -74.1],
   ])
 ```
 
@@ -175,17 +249,81 @@ const query = createQuery()
 ```typescript
 const query = createQuery()
   .match('category', 'electronics')
-  // Metric aggregations
   .avgAgg('avg_price', 'price')
   .sumAgg('total_sales', 'sales')
   .cardinalityAgg('unique_users', 'user_id')
-  // Bucket aggregations
   .histogramAgg('price_distribution', 'price', 100)
   .rangeAgg('price_ranges', 'price', [
     { to: 100, key: 'budget' },
     { from: 100, to: 500, key: 'mid-range' },
     { from: 500, key: 'premium' },
   ])
+```
+
+## 🛠️ Query Utilities & Management
+
+### Query Validation & Analysis
+
+```typescript
+const query = createQuery()
+  .match('title', 'javascript')
+  .range('price', { gte: 10, lte: 100 })
+
+const validation = query.validate()
+if (!validation.valid) {
+  console.log('Errors:', validation.errors)
+}
+
+const complexity = query.getComplexity()
+console.log('Query complexity score:', complexity)
+
+const prettyJson = query.toJSON(true)
+console.log(prettyJson)
+```
+
+### Query Manipulation
+
+```typescript
+const baseQuery = createQuery()
+  .match('category', 'electronics')
+  .range('price', { gte: 100 })
+
+const laptopQuery = baseQuery.clone().term('type', 'laptop')
+const phoneQuery = baseQuery.clone().term('type', 'smartphone')
+
+const customQuery = createQuery()
+  .match('title', 'tutorial')
+  .raw(
+    {
+      function_score: {
+        boost_mode: 'multiply',
+        functions: [{ weight: 2.0 }],
+      },
+    },
+    'must'
+  )
+
+const reusableQuery = createQuery()
+  .match('temp', 'value')
+  .reset()
+  .match('title', 'new search')
+```
+
+### Advanced Query Features
+
+```typescript
+const query = createQuery()
+  .match('title', 'tutorial')
+  .highlight(['title', 'content'])
+  .highlight({
+    title: { number_of_fragments: 3 },
+    content: { fragment_size: 150 },
+  })
+  .source(['title', 'summary', 'publishedAt'])
+  .source(false)
+  .trackTotalHits(true)
+  .explain()
+  .profile()
 ```
 
 ## 🔄 Migration from v1.x
@@ -227,35 +365,107 @@ const response = await fetch('/products/_search', {
 
 ## 📚 API Reference
 
-### Core Query Methods
+### Text Search Methods
 
-- `match(field, value)` - Full-text match
-- `term(field, value)` - Exact term match
-- `range(field, { gte, lte })` - Range queries
-- `exists(field)` - Field existence
-- `terms(field, values)` - Multiple values
+- `match(field, value, operator?)` - Full-text search with optional AND/OR operator
+- `matchPhrase(field, value)` - Exact phrase matching
+- `multiMatch(fields[], value, type?)` - Multi-field search with type ('best_fields', 'most_fields', etc.)
+- `queryString(query, options?)` - Lucene query string syntax with field targeting
+- `simpleQueryString(query, fields?)` - Simplified query string for user input
 
-### Advanced Queries
+### Pattern Matching
 
-- `fuzzy(field, value, options)` - Fuzzy matching
-- `regexp(field, pattern)` - Regular expressions
-- `nested(path, callback)` - Nested queries
-- `geoDistance(field, distance, lat, lon)` - Geo queries
-- `functionScore(functions)` - Custom scoring
+- `wildcard(field, pattern)` - Wildcard patterns (\* and ?)
+- `prefix(field, value)` - Prefix matching
+- `regexp(field, pattern, flags?)` - Regular expression search
+- `fuzzy(field, value, options?)` - Fuzzy/typo-tolerant matching
 
-### Aggregations
+### Exact Matching & Filtering
 
-- `termsAgg(name, field)` - Terms aggregation
+- `term(field, value)` - Exact value match (auto-adds .keyword)
+- `terms(field, values[])` - Match any of multiple values
+- `range(field, { gte?, lte?, gt?, lt? })` - Numeric/date ranges
+- `exists(field)` - Field presence check
+
+### Boolean Logic
+
+- `should(callback)` - OR conditions (add multiple queries)
+- `mustNot(callback)` - Exclusion conditions (NOT)
+- `minimumShouldMatch(count)` - Minimum should clause matches
+
+### Geo-Spatial Queries
+
+- `geoDistance(field, distance, lat, lon)` - Distance-based search
+- `geoBoundingBox(field, topLeft, bottomRight)` - Rectangular area
+- `geoPolygon(field, points[])` - Polygon area search
+
+### Nested & Hierarchical
+
+- `nested(path, callback)` - Query nested objects
+- `hasChild(type, callback)` - Parent-child relationships
+- `hasParent(type, callback)` - Child-parent relationships
+
+### Advanced Scoring
+
+- `functionScore(functions[], options?)` - Custom scoring functions
+- `constantScore(boost)` - Apply constant score
+- `boost(value)` - Boost entire query
+- `moreLikeThis(fields[], texts?, docs?)` - Find similar documents
+
+### Aggregations - Metrics
+
 - `avgAgg(name, field)` - Average values
-- `histogramAgg(name, field, interval)` - Histograms
-- `dateHistogramAgg(name, field, interval)` - Time series
+- `sumAgg(name, field)` - Sum values
+- `minAgg(name, field)` - Minimum values
+- `maxAgg(name, field)` - Maximum values
+- `cardinalityAgg(name, field)` - Unique value count
+- `valueCountAgg(name, field)` - Field value count
 
-### Utilities
+### Aggregations - Buckets
 
-- `validate()` - Query validation
-- `getComplexity()` - Complexity analysis
-- `toJSON(pretty?)` - JSON export
-- `clone()` - Deep copy query
+- `termsAgg(name, field, size?)` - Group by field values
+- `dateHistogramAgg(name, field, interval, format?)` - Time-based grouping
+- `histogramAgg(name, field, interval)` - Numeric histogram
+- `rangeAgg(name, field, ranges[])` - Custom ranges
+- `filtersAgg(name, filters{})` - Custom filter buckets
+- `nestedAgg(name, path)` - Nested object aggregations
+
+### Result Control
+
+- `from(offset)` - Result offset for pagination
+- `size(limit)` - Number of results to return
+- `sort(field, order?)` - Simple sorting (asc/desc)
+- `sortBy(options{})` - Advanced sorting with missing value handling
+- `clearSort()` - Remove all sorting
+- `source(fields[] | boolean)` - Control returned fields
+- `highlight(fields[] | config{})` - Result highlighting
+- `trackTotalHits(boolean)` - Enable total hit counting
+
+### Query Management
+
+- `validate()` - Check query validity, returns { valid, errors[] }
+- `getComplexity()` - Get numeric complexity score
+- `toJSON(pretty?)` - Export as JSON string
+- `clone()` - Create deep copy of query builder
+- `reset()` - Clear all query conditions
+- `build()` - Generate final Elasticsearch DSL
+
+### Raw & Advanced
+
+- `raw(query, clause?)` - Add raw Elasticsearch query to specific clause
+- `setQuery(query)` - Replace entire query object
+- `matchAll()` - Match all documents
+- `script(script, params?)` - Script-based queries
+- `explain()` - Add score explanation to results
+- `profile()` - Enable query profiling
+
+### Factory Functions
+
+- `createQuery()` - Create basic query builder
+- `createEcommerceQuery()` - E-commerce specialized builder
+- `createLogsQuery()` - Log analysis specialized builder
+- `createAnalyticsQuery()` - Analytics specialized builder
+- `createContentQuery()` - Content management specialized builder
 
 ## 🤝 Contributing
 
