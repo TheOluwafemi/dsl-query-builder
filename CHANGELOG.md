@@ -1,3 +1,10 @@
+# [1.5.0](https://github.com/TheOluwafemi/dsl-query-builder/compare/v1.4.3...v1.5.0) (2025-12-02)
+
+
+### Features
+
+* improve index validation and error handling in SearchClient ([de56751](https://github.com/TheOluwafemi/dsl-query-builder/commit/de567516dfba49ba76977ca62a1292bd492695b1))
+
 ## [1.4.3](https://github.com/TheOluwafemi/dsl-query-builder/compare/v1.4.2...v1.4.3) (2025-12-02)
 
 
