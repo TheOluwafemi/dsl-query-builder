@@ -127,10 +127,13 @@ export function validateSearchConfig(config: any): void {
   if (config.tokenType !== undefined) {
     // Use explicit check instead of array.includes to avoid potential undefined errors
     const validTokenTypes = ['bearer', 'raw']
-    if (
-      typeof config.tokenType !== 'string' ||
-      !validTokenTypes.includes(config.tokenType)
-    ) {
+
+    // More defensive validation to prevent any potential runtime errors
+    const isValidTokenType =
+      typeof config.tokenType === 'string' &&
+      validTokenTypes.indexOf(config.tokenType) !== -1
+
+    if (!isValidTokenType) {
       throw new ValidationError(
         'tokenType must be either "bearer" or "raw"',
         'tokenType',
@@ -172,7 +175,10 @@ export function validateRangeQuery(range: any): void {
     )
   }
 
-  const invalidKeys = providedKeys.filter((key) => !validKeys.includes(key))
+  // More defensive validation to prevent runtime errors with includes method
+  const invalidKeys = providedKeys.filter((key) => {
+    return !Array.isArray(validKeys) || validKeys.indexOf(key) === -1
+  })
   if (invalidKeys.length > 0) {
     throw new ValidationError(
       `Invalid range query keys: ${invalidKeys.join(', ')}`,
@@ -467,7 +473,7 @@ export function validateMultiMatchType(type?: any): void {
     'bool_prefix',
   ]
 
-  if (typeof type !== 'string' || !validTypes.includes(type)) {
+  if (typeof type !== 'string' || validTypes.indexOf(type) === -1) {
     throw new ValidationError(
       `Invalid multi_match type: ${type}. Valid types are: ${validTypes.join(
         ', '
