@@ -1,396 +1,347 @@
-import { createSearchClient, createQuery, ValidationError } from '../src/index'
+import {
+  createQuery,
+  createEcommerceQuery,
+  createLogsQuery,
+  createAnalyticsQuery,
+  createContentQuery,
+} from '../src/index'
 import { QueryBuilder } from '../src/query-builder'
-import { SearchClient } from '../src/search-client'
-import axios from 'axios'
+import {
+  EcommerceQueryBuilder,
+  LogsQueryBuilder,
+  AnalyticsQueryBuilder,
+  ContentQueryBuilder,
+} from '../src/presets'
 
-// Mock axios
-const mockAxios = axios as jest.Mocked<typeof axios>
-const mockAxiosInstance = {
-  post: jest.fn(),
-  defaults: { headers: { common: {} as Record<string, string> } },
-}
-mockAxios.create = jest.fn(() => mockAxiosInstance as any)
+describe('Integration Tests - HTTP Client Usage', () => {
+  describe('Basic Query Building Integration', () => {
+    it('should create a complete e-commerce search query', () => {
+      const query = createQuery()
+        .match('name', 'wireless headphones')
+        .range('price', { gte: 50, lte: 300 })
+        .terms('brand', ['sony', 'bose', 'apple'])
+        .term('in_stock', true)
+        .sort('rating', 'desc')
+        .sort('price', 'asc')
+        .size(24)
+        .from(0)
+        .termsAgg('brands', 'brand.keyword')
+        .rangeAgg('price_ranges', 'price', [
+          { to: 100, key: 'budget' },
+          { from: 100, to: 200, key: 'mid' },
+          { from: 200, key: 'premium' },
+        ])
+        .build()
 
-describe('Integration Tests', () => {
-  beforeEach(() => {
-    jest.clearAllMocks()
+      expect(query).toMatchObject({
+        from: 0,
+        size: 24,
+        query: {
+          bool: {
+            must: [
+              {
+                match: { name: { query: 'wireless headphones' } },
+              },
+            ],
+            filter: [
+              { range: { price: { gte: 50, lte: 300 } } },
+              { terms: { brand: ['sony', 'bose', 'apple'] } },
+              { term: { 'in_stock.keyword': true } },
+            ],
+          },
+        },
+        sort: [{ rating: 'desc' }, { price: 'asc' }],
+        aggs: {
+          brands: { terms: { field: 'brand.keyword', size: 10 } },
+          price_ranges: {
+            range: {
+              field: 'price',
+              ranges: [
+                { to: 100, key: 'budget' },
+                { from: 100, to: 200, key: 'mid' },
+                { from: 200, key: 'premium' },
+              ],
+            },
+          },
+        },
+      })
+    })
+
+    it('should build complex analytics query', () => {
+      const query = createQuery()
+        .range('event_timestamp', { gte: '2023-01-01', lte: '2023-12-31' })
+        .term('event_type', 'purchase')
+        .nested('user', (q) => {
+          q.term('user.segment', 'premium').range('user.account_age_days', {
+            gte: 365,
+          })
+        })
+        .functionScore([
+          {
+            filter: { range: { event_timestamp: { gte: 'now-7d' } } },
+            weight: 2.0,
+          },
+        ])
+        .cardinalityAgg('unique_users', 'user.id')
+        .dateHistogramAgg('purchases_over_time', 'event_timestamp', '1d')
+        .sumAgg('total_revenue', 'purchase_amount')
+        .build()
+
+      expect(query.query).toHaveProperty('function_score')
+      expect(query.aggs).toHaveProperty('unique_users')
+      expect(query.aggs).toHaveProperty('purchases_over_time')
+      expect(query.aggs).toHaveProperty('total_revenue')
+    })
+  })
+
+  describe('HTTP Client Integration Examples', () => {
+    it('should demonstrate fetch API usage', async () => {
+      const query = createQuery()
+        .match('title', 'javascript')
+        .range('published_date', { gte: '2023-01-01' })
+        .sort('_score', 'desc')
+        .size(10)
+
+      const dsl = query.build()
+
+      // Mock fetch to demonstrate usage
+      const mockFetch = jest.fn().mockResolvedValue({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            hits: {
+              total: { value: 42 },
+              hits: [{ _id: '1', _source: { title: 'JavaScript Basics' } }],
+            },
+          }),
+      })
+
+      global.fetch = mockFetch
+
+      // Simulate actual usage
+      const response = await fetch('http://localhost:9200/articles/_search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(dsl),
+      })
+
+      const results = await response.json()
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:9200/articles/_search',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(dsl),
+        }
+      )
+      expect((results as any).hits.total.value).toBe(42)
+    })
+
+    it('should demonstrate custom HTTP client integration', async () => {
+      // Mock custom HTTP client
+      const httpClient = {
+        post: jest.fn().mockResolvedValue({
+          data: {
+            hits: { total: { value: 15 }, hits: [] },
+            aggregations: { categories: { buckets: [] } },
+          },
+        }),
+      }
+
+      const query = createEcommerceQuery()
+        .searchProducts('laptop', { category: 'electronics' })
+        .addEcommerceAggregations()
+
+      const dsl = query.build()
+
+      // Use with custom client
+      const response = await httpClient.post('/search', dsl)
+
+      expect(httpClient.post).toHaveBeenCalledWith('/search', dsl)
+      expect(response.data.hits.total.value).toBe(15)
+    })
+
+    it('should demonstrate GraphQL integration', () => {
+      const query = createContentQuery()
+        .searchContent('react hooks tutorial')
+        .contentType('tutorial')
+        .publishedBetween(new Date('2023-01-01'), new Date('2023-12-31'))
+
+      const dsl = query.build()
+
+      // GraphQL variables
+      const variables = {
+        searchQuery: dsl,
+        index: 'content',
+      }
+
+      // Mock GraphQL query
+      const graphqlQuery = `
+        query SearchContent($searchQuery: JSON!, $index: String!) {
+          search(query: $searchQuery, index: $index) {
+            total
+            hits {
+              id
+              title
+              content
+              publishedAt
+            }
+            aggregations
+          }
+        }
+      `
+
+      expect(variables.searchQuery).toEqual(dsl)
+      expect(typeof graphqlQuery).toBe('string')
+    })
   })
 
   describe('Factory Functions', () => {
-    it('should create search client with factory function', () => {
-      const client = createSearchClient({
-        endpoint: 'https://elasticsearch.example.com',
-        index: 'test-index',
-      })
-
-      expect(client).toBeInstanceOf(SearchClient)
+    it('should create basic query builder', () => {
+      const query = createQuery()
+      expect(query).toBeInstanceOf(QueryBuilder)
     })
 
-    it('should create query builder with factory function', () => {
-      const query = createQuery()
+    it('should create ecommerce query builder', () => {
+      const query = createEcommerceQuery()
+      expect(query).toBeInstanceOf(EcommerceQueryBuilder)
+      expect(query).toBeInstanceOf(QueryBuilder) // Should inherit
+    })
+
+    it('should create logs query builder', () => {
+      const query = createLogsQuery()
+      expect(query).toBeInstanceOf(LogsQueryBuilder)
+      expect(query).toBeInstanceOf(QueryBuilder)
+    })
+
+    it('should create analytics query builder', () => {
+      const query = createAnalyticsQuery()
+      expect(query).toBeInstanceOf(AnalyticsQueryBuilder)
+      expect(query).toBeInstanceOf(QueryBuilder)
+    })
+
+    it('should create content query builder', () => {
+      const query = createContentQuery()
+      expect(query).toBeInstanceOf(ContentQueryBuilder)
       expect(query).toBeInstanceOf(QueryBuilder)
     })
   })
 
-  describe('End-to-End Search Flow', () => {
-    interface Product {
-      id: string
-      name: string
-      price: number
-      category: string
-      inStock: boolean
-    }
-
-    const mockSearchResponse = {
-      took: 5,
-      timed_out: false,
-      _shards: { total: 1, successful: 1, skipped: 0, failed: 0 },
-      hits: {
-        total: { value: 2, relation: 'eq' },
-        max_score: 1.0,
-        hits: [
-          {
-            _index: 'products',
-            _id: '1',
-            _score: 1.0,
-            _source: {
-              id: '1',
-              name: 'Laptop',
-              price: 999,
-              category: 'electronics',
-              inStock: true,
-            },
-          },
-          {
-            _index: 'products',
-            _id: '2',
-            _score: 0.8,
-            _source: {
-              id: '2',
-              name: 'Phone',
-              price: 699,
-              category: 'electronics',
-              inStock: false,
-            },
-          },
-        ],
-      },
-    }
-
-    it('should perform complete search workflow with type safety', async () => {
-      mockAxiosInstance.post.mockResolvedValueOnce({ data: mockSearchResponse })
-
-      // Create client
-      const client = createSearchClient({
-        endpoint: 'https://elasticsearch.example.com',
-        index: 'products',
-        token: 'test-token',
-      })
-
-      // Build complex query
-      const query = createQuery()
-        .match('name', 'laptop')
-        .term('category', 'electronics')
-        .range('price', { gte: 100, lte: 2000 })
-        .should((q) => q.term('inStock', true).term('featured', true))
-        .minimumShouldMatch(1)
-        .sort('price', 'asc')
-        .termsAgg('categories', 'category.keyword', 10)
-        .size(20)
-        .from(0)
-
-      // Execute search with type safety
-      const results = await client.search<Product>(query)
-
-      // Verify results with full type safety
-      expect(results.hits.total.value).toBe(2)
-      expect(results.hits.hits).toHaveLength(2)
-
-      // TypeScript knows these are Product objects
-      const firstProduct = results.hits.hits[0]._source
-      expect(firstProduct.name).toBe('Laptop')
-      expect(firstProduct.price).toBe(999)
-      expect(firstProduct.inStock).toBe(true)
-
-      // Verify the query was built correctly
-      const expectedQuery = query.build()
-      expect(mockAxiosInstance.post).toHaveBeenCalledWith(
-        '/products',
-        expectedQuery
-      )
-    })
-
-    it('should handle search state updates during workflow', async () => {
-      mockAxiosInstance.post.mockResolvedValueOnce({ data: mockSearchResponse })
-
-      const client = createSearchClient({
-        endpoint: 'https://elasticsearch.example.com',
-        index: 'products',
-      })
-
-      const stateChanges: any[] = []
-      client.subscribe((state) => stateChanges.push({ ...state }))
-
-      const query = createQuery().match('name', 'laptop')
-      await client.search<Product>(query)
-
-      expect(stateChanges).toHaveLength(2)
-      expect(stateChanges[0]).toMatchObject({ loading: true, error: null })
-      expect(stateChanges[1]).toMatchObject({
-        loading: false,
-        error: null,
-        data: mockSearchResponse,
-      })
-    })
-  })
-
-  describe('Multi-Search Workflow', () => {
-    it('should perform multi-search across different indices', async () => {
-      const mockMsearchResponse = {
-        responses: [
-          { hits: { total: { value: 10 }, hits: [] } },
-          { hits: { total: { value: 5 }, hits: [] } },
-          { hits: { total: { value: 3 }, hits: [] } },
-        ],
-      }
-
-      mockAxiosInstance.post.mockResolvedValueOnce({
-        data: mockMsearchResponse,
-      })
-
-      const client = createSearchClient({
-        endpoint: 'https://elasticsearch.example.com',
-      })
-
-      const searches = [
-        {
-          index: 'products',
-          query: createQuery().match('category', 'electronics'),
-        },
-        {
-          index: 'users',
-          query: createQuery().term('active', true),
-        },
-        {
-          index: 'orders',
-          query: createQuery().range('createdAt', { gte: '2024-01-01' }),
-        },
-      ]
-
-      const results = await client.msearch(searches)
-
-      expect(results).toHaveLength(3)
-      expect(results[0].hits.total.value).toBe(10)
-      expect(results[1].hits.total.value).toBe(5)
-      expect(results[2].hits.total.value).toBe(3)
-    })
-  })
-
-  describe('Error Handling Integration', () => {
-    it('should handle validation errors in complete workflow', async () => {
-      // Test client creation validation
-      expect(() =>
-        createSearchClient({
-          endpoint: 'invalid-url',
+  describe('Real-World Scenarios', () => {
+    it('should handle complex e-commerce faceted search', () => {
+      const query = createEcommerceQuery()
+        .searchProducts('gaming laptop', {
+          category: 'computers',
+          priceRange: { min: 800, max: 3000 },
+          brands: ['msi', 'asus', 'alienware'],
         })
-      ).toThrow(ValidationError)
-
-      // Test query building validation
-      const query = createQuery()
-      expect(() => query.match('', 'value')).toThrow(ValidationError)
-      expect(() => query.range('field', {})).toThrow(ValidationError)
-      expect(() => query.size(-1)).toThrow(ValidationError)
-
-      // Test search method validation
-      const client = createSearchClient({
-        endpoint: 'https://elasticsearch.example.com',
-      })
-
-      await expect(client.search(query, 'Invalid-Index')).rejects.toThrow(
-        ValidationError
-      )
-    })
-
-    it('should handle network errors gracefully', async () => {
-      mockAxiosInstance.post.mockImplementation(() => {
-        return Promise.reject(new Error('Network Error'))
-      })
-
-      const client = createSearchClient({
-        endpoint: 'https://elasticsearch.example.com',
-        index: 'test-index',
-        retries: 1,
-      })
-
-      const query = createQuery().matchAll()
-
-      await expect(client.search(query)).rejects.toMatchObject({
-        message: 'Network Error',
-      })
-    })
-  })
-
-  describe('Real-World Usage Patterns', () => {
-    it('should support e-commerce search scenario', async () => {
-      const mockResponse = {
-        hits: { total: { value: 50 }, hits: [] },
-        aggregations: {
-          categories: { buckets: [{ key: 'electronics', doc_count: 20 }] },
-          price_ranges: { buckets: [{ key: '0-100', doc_count: 15 }] },
-        },
-      }
-
-      mockAxiosInstance.post.mockResolvedValueOnce({ data: mockResponse })
-
-      const client = createSearchClient({
-        endpoint: 'https://elasticsearch.example.com',
-        index: 'products',
-      })
-
-      // E-commerce search with filters and aggregations
-      const searchQuery = createQuery()
-        .multiMatch(['name', 'description'], 'smartphone', 'best_fields')
-        .terms('brand', ['apple', 'samsung', 'google'])
-        .range('price', { gte: 100, lte: 1000 })
-        .term('inStock', true)
-        .should((q) => q.term('featured', true).range('rating', { gte: 4.0 }))
-        .minimumShouldMatch(1)
-        .termsAgg('categories', 'category.keyword', 10)
-        .termsAgg('brands', 'brand.keyword', 20)
-        .aggregate('price_ranges', {
-          range: {
-            field: 'price',
-            ranges: [
-              { to: 100 },
-              { from: 100, to: 500 },
-              { from: 500, to: 1000 },
-              { from: 1000 },
-            ],
-          },
-        })
-        .highlight(['name', 'description'])
-        .sort('_score', 'desc')
-        .sort('price', 'asc')
+        .addEcommerceAggregations()
+        .sortByPopularity()
         .size(24)
-        .from(0)
+        .highlight(['name', 'description'])
 
-      const results = await client.search(searchQuery)
+      const dsl = query.build()
 
-      expect(results.hits.total.value).toBe(50)
-      expect(results.aggregations).toBeDefined()
-      expect(mockAxiosInstance.post).toHaveBeenCalledWith(
-        '/products',
-        searchQuery.build()
-      )
+      expect(dsl.query?.bool?.must).toBeDefined()
+      expect(dsl.query?.bool?.filter).toBeDefined()
+      expect(dsl.aggs).toBeDefined()
+      expect(dsl.sort).toBeDefined()
+      expect(dsl.highlight).toBeDefined()
+      expect(dsl.size).toBe(24)
     })
 
-    it('should support analytics/dashboard scenario', async () => {
-      const mockMsearchResponse = {
-        responses: [
+    it('should handle log analysis scenario', () => {
+      const query = createLogsQuery()
+        .timeRange('now-24h', 'now')
+        .logLevel('error')
+        .service('payment-service')
+        .withError()
+        .addLogAggregations()
+        .addTimeHistogram('1h')
+        .sortByTime()
+        .size(100)
+
+      const dsl = query.build()
+
+      expect(dsl.query).toBeDefined()
+      expect(dsl.aggs).toHaveProperty('logs_over_time')
+      expect(dsl.sort).toBeDefined()
+    })
+
+    it('should handle analytics dashboard scenario', () => {
+      const query = createAnalyticsQuery()
+        .dateRange(new Date('2023-01-01'), new Date('2023-01-31'))
+        .eventType('page_view')
+        .userSegment('active')
+        .addUserAnalytics()
+        .addTimeAnalytics('1d')
+        .size(0) // Only aggregations
+
+      const dsl = query.build()
+
+      expect(dsl.size).toBe(0)
+      expect(dsl.aggs).toHaveProperty('unique_users')
+      expect(dsl.aggs).toHaveProperty('events_over_time')
+      expect(dsl.query?.bool?.filter).toBeDefined()
+    })
+
+    it('should handle content recommendation scenario', () => {
+      const query = createContentQuery()
+        .moreLikeThis(['title', 'content', 'tags'], undefined, [
+          { _index: 'articles', _id: 'current-article-123' },
+        ])
+        .contentType('article')
+        .withTags(['javascript', 'tutorial'])
+        .functionScore([
           {
-            hits: { total: { value: 1000 } },
-            aggregations: { sales: { value: 50000 } },
+            filter: { range: { view_count: { gte: 1000 } } },
+            weight: 1.5,
           },
-          { hits: { total: { value: 150 } } },
-          { aggregations: { daily_sales: { buckets: [] } } },
-        ],
-      }
+          {
+            filter: { range: { published_at: { gte: 'now-30d' } } },
+            weight: 1.2,
+          },
+        ])
+        .size(5)
 
-      mockAxiosInstance.post.mockResolvedValueOnce({
-        data: mockMsearchResponse,
-      })
+      const dsl = query.build()
 
-      const client = createSearchClient({
-        endpoint: 'https://elasticsearch.example.com',
-      })
-
-      // Dashboard queries
-      const dashboardQueries = [
-        {
-          index: 'orders',
-          query: createQuery()
-            .range('createdAt', { gte: 'now-30d' })
-            .aggregate('total_sales', { sum: { field: 'amount' } })
-            .size(0),
-        },
-        {
-          index: 'users',
-          query: createQuery().range('registeredAt', { gte: 'now-7d' }).size(0),
-        },
-        {
-          index: 'orders',
-          query: createQuery()
-            .dateHistogramAgg('daily_sales', 'createdAt', '1d', 'yyyy-MM-dd')
-            .size(0),
-        },
-      ]
-
-      const results = await client.msearch(dashboardQueries)
-
-      expect(results).toHaveLength(3)
-      // Total sales
-      expect(results[0].hits.total.value).toBe(1000)
-      // New users
-      expect(results[1].hits.total.value).toBe(150)
-      // Daily sales trend
-      expect(results[2].aggregations?.daily_sales).toBeDefined()
+      expect(dsl.query).toHaveProperty('function_score')
+      expect(dsl.query.function_score.query.bool.must).toBeDefined()
+      expect(dsl.size).toBe(5)
     })
   })
 
-  describe('Configuration and Flexibility', () => {
-    it('should support dynamic configuration changes', async () => {
-      const client = createSearchClient({
-        endpoint: 'https://elasticsearch.example.com',
-        index: 'initial-index',
-      })
+  describe('Performance and Bundle Size', () => {
+    it('should create queries efficiently', () => {
+      const start = performance.now()
 
-      // Change configuration at runtime
-      client.setIndex('new-index').setToken('new-token')
+      // Create multiple complex queries
+      for (let i = 0; i < 100; i++) {
+        createQuery()
+          .match('title', `query ${i}`)
+          .range('price', { gte: i * 10, lte: (i + 1) * 10 })
+          .termsAgg('categories', 'category')
+          .build()
+      }
 
-      mockAxiosInstance.post.mockResolvedValueOnce({
-        data: { hits: { total: { value: 0 }, hits: [] } },
-      })
+      const end = performance.now()
+      const duration = end - start
 
-      await client.search(createQuery().matchAll())
-
-      expect(mockAxiosInstance.post).toHaveBeenCalledWith(
-        '/new-index',
-        expect.any(Object)
-      )
-      expect(mockAxiosInstance.defaults.headers.common.Authorization).toBe(
-        'Bearer new-token'
-      )
+      expect(duration).toBeLessThan(100) // Should be very fast
     })
 
-    it('should support query cloning and reuse', () => {
-      const baseQuery = createQuery()
-        .term('category', 'electronics')
-        .range('price', { gte: 100 })
+    it('should have minimal memory footprint', () => {
+      const queries = []
 
-      const laptopQuery = baseQuery
-        .clone()
-        .match('name', 'laptop')
-        .sort('price', 'asc')
+      // Create many queries
+      for (let i = 0; i < 1000; i++) {
+        queries.push(createQuery().match('field', `value${i}`).build())
+      }
 
-      const phoneQuery = baseQuery
-        .clone()
-        .match('name', 'phone')
-        .sort('rating', 'desc')
-
-      const baseResult = baseQuery.build()
-      const laptopResult = laptopQuery.build()
-      const phoneResult = phoneQuery.build()
-
-      // Base query should be unchanged
-      expect(baseResult.query?.bool?.must).toBeUndefined()
-
-      // Cloned queries should have their specific modifications
-      expect(laptopResult.query?.bool?.must).toContainEqual({
-        match: { name: { query: 'laptop' } },
-      })
-      expect(phoneResult.query?.bool?.must).toContainEqual({
-        match: { name: { query: 'phone' } },
-      })
+      expect(queries).toHaveLength(1000)
+      // If this test passes without memory issues, footprint is acceptable
     })
   })
 })

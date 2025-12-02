@@ -427,6 +427,491 @@ export class QueryBuilder {
     return cloned
   }
 
+  // ========================================
+  // ADVANCED QUERY TYPES
+  // ========================================
+
+  /**
+   * Add a fuzzy query
+   */
+  fuzzy(
+    field: string,
+    value: string,
+    options?: { fuzziness?: string | number; boost?: number }
+  ): this {
+    validateFieldName(field, 'fuzzy query')
+    validateQueryValue(value, 'fuzzy query')
+    this.ensureBoolQuery()
+
+    const fuzzyQuery: any = { fuzzy: { [field]: { value } } }
+    if (options?.fuzziness)
+      fuzzyQuery.fuzzy[field].fuzziness = options.fuzziness
+    if (options?.boost) fuzzyQuery.fuzzy[field].boost = options.boost
+
+    this.query.query!.bool!.must!.push(fuzzyQuery)
+    return this
+  }
+
+  /**
+   * Add a regexp query
+   */
+  regexp(field: string, value: string, flags?: string): this {
+    validateFieldName(field, 'regexp query')
+    validateQueryValue(value, 'regexp query')
+    this.ensureBoolQuery()
+
+    const regexpQuery: any = { regexp: { [field]: { value } } }
+    if (flags) regexpQuery.regexp[field].flags = flags
+
+    this.query.query!.bool!.must!.push(regexpQuery)
+    return this
+  }
+
+  /**
+   * Add a query string query
+   */
+  queryString(
+    queryStr: string,
+    options?: { fields?: string[]; default_operator?: 'AND' | 'OR' }
+  ): this {
+    validateQueryValue(queryStr, 'query_string query')
+    this.ensureBoolQuery()
+
+    const queryStringQuery: any = { query_string: { query: queryStr } }
+    if (options?.fields) queryStringQuery.query_string.fields = options.fields
+    if (options?.default_operator)
+      queryStringQuery.query_string.default_operator = options.default_operator
+
+    this.query.query!.bool!.must!.push(queryStringQuery)
+    return this
+  }
+
+  /**
+   * Add a simple query string query
+   */
+  simpleQueryString(queryStr: string, fields?: string[]): this {
+    validateQueryValue(queryStr, 'simple_query_string query')
+    this.ensureBoolQuery()
+
+    const simpleQuery: any = { simple_query_string: { query: queryStr } }
+    if (fields) simpleQuery.simple_query_string.fields = fields
+
+    this.query.query!.bool!.must!.push(simpleQuery)
+    return this
+  }
+
+  /**
+   * Add a nested query
+   */
+  nested(path: string, callback: (builder: QueryBuilder) => void): this {
+    validateFieldName(path, 'nested query')
+    this.ensureBoolQuery()
+
+    const nestedBuilder = new QueryBuilder()
+    callback(nestedBuilder)
+
+    const nestedQuery = {
+      nested: {
+        path,
+        query: nestedBuilder.build().query,
+      },
+    }
+
+    this.query.query!.bool!.must!.push(nestedQuery)
+    return this
+  }
+
+  /**
+   * Add a has_child query
+   */
+  hasChild(type: string, callback: (builder: QueryBuilder) => void): this {
+    validateQueryValue(type, 'has_child query')
+    this.ensureBoolQuery()
+
+    const childBuilder = new QueryBuilder()
+    callback(childBuilder)
+
+    const hasChildQuery = {
+      has_child: {
+        type,
+        query: childBuilder.build().query,
+      },
+    }
+
+    this.query.query!.bool!.must!.push(hasChildQuery)
+    return this
+  }
+
+  /**
+   * Add a has_parent query
+   */
+  hasParent(type: string, callback: (builder: QueryBuilder) => void): this {
+    validateQueryValue(type, 'has_parent query')
+    this.ensureBoolQuery()
+
+    const parentBuilder = new QueryBuilder()
+    callback(parentBuilder)
+
+    const hasParentQuery = {
+      has_parent: {
+        parent_type: type,
+        query: parentBuilder.build().query,
+      },
+    }
+
+    this.query.query!.bool!.must!.push(hasParentQuery)
+    return this
+  }
+
+  // ========================================
+  // GEO QUERIES
+  // ========================================
+
+  /**
+   * Add a geo_distance query
+   */
+  geoDistance(field: string, distance: string, lat: number, lon: number): this {
+    validateFieldName(field, 'geo_distance query')
+    validateQueryValue(distance, 'geo_distance query')
+    this.ensureBoolQuery()
+
+    const geoDistanceQuery = {
+      geo_distance: {
+        distance,
+        [field]: { lat, lon },
+      },
+    }
+
+    this.query.query!.bool!.filter!.push(geoDistanceQuery)
+    return this
+  }
+
+  /**
+   * Add a geo_bounding_box query
+   */
+  geoBoundingBox(
+    field: string,
+    topLeft: [number, number],
+    bottomRight: [number, number]
+  ): this {
+    validateFieldName(field, 'geo_bounding_box query')
+    this.ensureBoolQuery()
+
+    const geoBBoxQuery = {
+      geo_bounding_box: {
+        [field]: {
+          top_left: { lat: topLeft[0], lon: topLeft[1] },
+          bottom_right: { lat: bottomRight[0], lon: bottomRight[1] },
+        },
+      },
+    }
+
+    this.query.query!.bool!.filter!.push(geoBBoxQuery)
+    return this
+  }
+
+  /**
+   * Add a geo_polygon query
+   */
+  geoPolygon(field: string, points: Array<[number, number]>): this {
+    validateFieldName(field, 'geo_polygon query')
+    if (!Array.isArray(points) || points.length < 3) {
+      throw new Error('geo_polygon query requires at least 3 points')
+    }
+    this.ensureBoolQuery()
+
+    const geoPolygonQuery = {
+      geo_polygon: {
+        [field]: {
+          points: points.map(([lat, lon]) => ({ lat, lon })),
+        },
+      },
+    }
+
+    this.query.query!.bool!.filter!.push(geoPolygonQuery)
+    return this
+  }
+
+  // ========================================
+  // SCRIPT AND FUNCTION SCORE
+  // ========================================
+
+  /**
+   * Add a script query
+   */
+  script(script: string, params?: Record<string, any>): this {
+    validateQueryValue(script, 'script query')
+    this.ensureBoolQuery()
+
+    const scriptQuery: any = { script: { script: { source: script } } }
+    if (params) scriptQuery.script.script.params = params
+
+    this.query.query!.bool!.must!.push(scriptQuery)
+    return this
+  }
+
+  /**
+   * Add a more_like_this query
+   */
+  moreLikeThis(fields: string[], texts?: string[], docs?: any[]): this {
+    validateStringArray(fields, 'more_like_this fields')
+    this.ensureBoolQuery()
+
+    const mltQuery: any = { more_like_this: { fields } }
+    if (texts && texts.length > 0) mltQuery.more_like_this.like = texts
+    if (docs && docs.length > 0) {
+      mltQuery.more_like_this.like = mltQuery.more_like_this.like || []
+      mltQuery.more_like_this.like.push(...docs)
+    }
+
+    this.query.query!.bool!.must!.push(mltQuery)
+    return this
+  }
+
+  /**
+   * Apply function score to the query
+   */
+  functionScore(
+    functions: any[],
+    options?: { boost_mode?: string; score_mode?: string }
+  ): this {
+    const currentQuery = this.query.query
+
+    this.query.query = {
+      function_score: {
+        query: currentQuery,
+        functions,
+        boost_mode: options?.boost_mode || 'multiply',
+        score_mode: options?.score_mode || 'multiply',
+      },
+    }
+
+    return this
+  }
+
+  /**
+   * Apply constant score to the query
+   */
+  constantScore(boost: number): this {
+    const currentQuery = this.query.query
+
+    this.query.query = {
+      constant_score: {
+        filter: currentQuery,
+        boost,
+      },
+    }
+
+    return this
+  }
+
+  // ========================================
+  // ENHANCED AGGREGATIONS
+  // ========================================
+
+  /**
+   * Add average aggregation
+   */
+  avgAgg(name: string, field: string): this {
+    validateAggregationName(name)
+    validateFieldName(field, 'avg aggregation')
+    return this.aggregate(name, { avg: { field } })
+  }
+
+  /**
+   * Add sum aggregation
+   */
+  sumAgg(name: string, field: string): this {
+    validateAggregationName(name)
+    validateFieldName(field, 'sum aggregation')
+    return this.aggregate(name, { sum: { field } })
+  }
+
+  /**
+   * Add max aggregation
+   */
+  maxAgg(name: string, field: string): this {
+    validateAggregationName(name)
+    validateFieldName(field, 'max aggregation')
+    return this.aggregate(name, { max: { field } })
+  }
+
+  /**
+   * Add min aggregation
+   */
+  minAgg(name: string, field: string): this {
+    validateAggregationName(name)
+    validateFieldName(field, 'min aggregation')
+    return this.aggregate(name, { min: { field } })
+  }
+
+  /**
+   * Add cardinality aggregation
+   */
+  cardinalityAgg(name: string, field: string): this {
+    validateAggregationName(name)
+    validateFieldName(field, 'cardinality aggregation')
+    return this.aggregate(name, { cardinality: { field } })
+  }
+
+  /**
+   * Add value count aggregation
+   */
+  valueCountAgg(name: string, field: string): this {
+    validateAggregationName(name)
+    validateFieldName(field, 'value_count aggregation')
+    return this.aggregate(name, { value_count: { field } })
+  }
+
+  /**
+   * Add histogram aggregation
+   */
+  histogramAgg(name: string, field: string, interval: number): this {
+    validateAggregationName(name)
+    validateFieldName(field, 'histogram aggregation')
+    if (!Number.isInteger(interval) || interval <= 0) {
+      throw new Error('Histogram interval must be a positive integer')
+    }
+    return this.aggregate(name, { histogram: { field, interval } })
+  }
+
+  /**
+   * Add range aggregation
+   */
+  rangeAgg(
+    name: string,
+    field: string,
+    ranges: Array<{ from?: number; to?: number; key?: string }>
+  ): this {
+    validateAggregationName(name)
+    validateFieldName(field, 'range aggregation')
+    if (!Array.isArray(ranges) || ranges.length === 0) {
+      throw new Error('Range aggregation requires at least one range')
+    }
+    return this.aggregate(name, { range: { field, ranges } })
+  }
+
+  /**
+   * Add filters aggregation
+   */
+  filtersAgg(name: string, filters: Record<string, any>): this {
+    validateAggregationName(name)
+    if (!filters || typeof filters !== 'object') {
+      throw new Error('Filters aggregation requires filters object')
+    }
+    return this.aggregate(name, { filters: { filters } })
+  }
+
+  /**
+   * Add nested aggregation
+   */
+  nestedAgg(name: string, path: string): this {
+    validateAggregationName(name)
+    validateFieldName(path, 'nested aggregation')
+    return this.aggregate(name, { nested: { path } })
+  }
+
+  // ========================================
+  // QUERY UTILITIES
+  // ========================================
+
+  /**
+   * Apply boost to the entire query
+   */
+  boost(value: number): this {
+    if (typeof value !== 'number' || value <= 0) {
+      throw new Error('Boost value must be a positive number')
+    }
+
+    if (this.query.query && typeof this.query.query === 'object') {
+      // Apply boost to the current query structure
+      const currentQuery = this.query.query
+      this.query.query = { ...currentQuery, boost: value }
+    }
+
+    return this
+  }
+
+  /**
+   * Add explain flag
+   */
+  explain(): this {
+    (this.query as any).explain = true
+    return this
+  }
+
+  /**
+   * Add profiling
+   */
+  profile(): this {
+    (this.query as any).profile = true
+    return this
+  }
+
+  /**
+   * Validate the current query structure
+   */
+  validate(): { valid: boolean; errors: string[] } {
+    const errors: string[] = []
+
+    try {
+      const built = this.build()
+      if (!built.query) {
+        errors.push('Query is missing query clause')
+      }
+
+      if (built.from && (built.from < 0 || !Number.isInteger(built.from))) {
+        errors.push('from parameter must be a non-negative integer')
+      }
+
+      if (built.size && (built.size <= 0 || !Number.isInteger(built.size))) {
+        errors.push('size parameter must be a positive integer')
+      }
+    } catch (error) {
+      errors.push((error as Error).message)
+    }
+
+    return {
+      valid: errors.length === 0,
+      errors,
+    }
+  }
+
+  /**
+   * Get estimated query complexity
+   */
+  getComplexity(): number {
+    const built = this.build()
+    let complexity = 1
+
+    if (built.query?.bool) {
+      const bool = built.query.bool
+      complexity += bool.must?.length || 0
+      complexity += bool.filter?.length || 0
+      complexity += bool.should?.length || 0
+      complexity += bool.must_not?.length || 0
+    }
+
+    if (built.aggs) {
+      complexity += Object.keys(built.aggs).length * 2
+    }
+
+    if (built.sort) {
+      complexity += built.sort.length
+    }
+
+    return complexity
+  }
+
+  /**
+   * Get query as formatted JSON string
+   */
+  toJSON(pretty: boolean = false): string {
+    return pretty
+      ? JSON.stringify(this.build(), null, 2)
+      : JSON.stringify(this.build())
+  }
+
   private ensureBoolQuery(): void {
     if (!this.query.query) {
       this.query.query = {}

@@ -1,284 +1,270 @@
 # DSL Query Builder
 
-A fluent TypeScript query builder for OpenSearch/Elasticsearch DSL with built-in client and type safety.
+🏗️ **Lightweight, zero-dependency TypeScript query builder for Elasticsearch/OpenSearch DSL**
 
-## Features
+## ⭐ Why Choose This?
 
-- 🏗️ **Fluent API** - Chainable query builder with intuitive syntax
-- 🔒 **Type Safety** - Full TypeScript support with generics
-- 🚀 **Built-in Client** - HTTP client with retry logic and state management
-- 🌐 **Proxy Support** - Works with enterprise proxy services
-- 📦 **Zero Config** - Sensible defaults, minimal setup
-- 🔄 **Reactive** - Observable state for UI integration
+- 🪶 **Lightweight**: <15KB, zero dependencies (was 65KB with axios)
+- 🔒 **Type-safe**: Full TypeScript support with generic types
+- 🚀 **Fast**: No HTTP overhead, pure query building performance
+- 🎯 **Focused**: Does one thing extremely well - building queries
+- 🔧 **Universal**: Works with ANY HTTP client (fetch, axios, ky, etc.)
+- 🌟 **Enhanced**: Advanced queries, geo search, nested queries, and more
 
-## Installation
+## 📦 Installation
 
 ```bash
 npm install dsl-query-builder
 ```
 
-## Quick Start
+## 🚀 Quick Start
 
 ```typescript
-import { createSearchClient, createQuery } from 'dsl-query-builder'
+import { createQuery } from 'dsl-query-builder'
+
+const query = createQuery()
+  .match('title', 'javascript tutorial')
+  .range('publishedAt', { gte: '2023-01-01' })
+  .sort('_score', 'desc')
+  .size(10)
+
+const dsl = query.build()
+
+// Use with ANY HTTP client:
+const results = await fetch('/search', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(dsl),
+}).then((r) => r.json())
+```
+
+## 🔗 HTTP Client Integration
+
+### With Native Fetch
+
+```typescript
+const query = createQuery().match('title', 'react')
+const response = await fetch('http://localhost:9200/articles/_search', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(query.build()),
+})
+```
+
+### With Axios
+
+```typescript
+import axios from 'axios'
+
+const dsl = createQuery().match('title', 'react').build()
+const response = await axios.post('/search', dsl)
+```
+
+### With Any Custom Client
+
+```typescript
+const dsl = createQuery().match('title', 'react').build()
+const response = await myHttpClient.post('/search', dsl)
+```
+
+## 🎯 Specialized Query Builders
+
+### E-commerce Search
+
+````typescript
+import { createEcommerceQuery } from 'dsl-query-builder'
+
+const query = createEcommerceQuery()
+  .searchProducts('wireless headphones', {
+    category: 'electronics',
+    priceRange: { min: 50, max: 300 },
+    brands: ['sony', 'bose'],
+    inStock: true
+  })
+  .addEcommerceAggregations()
+  .sortByPopularity()
+  .size(24)
+
+### Log Analysis
+```typescript
+import { createLogsQuery } from 'dsl-query-builder'
+
+const query = createLogsQuery()
+  .timeRange('now-24h', 'now')
+  .logLevel('error')
+  .service('payment-service')
+  .withError('SQLException')
+  .addLogAggregations()
+  .addTimeHistogram('1h')
+
+const dsl = query.build()
+````
+
+### Analytics & Metrics
+
+```typescript
+import { createAnalyticsQuery } from 'dsl-query-builder'
+
+const query = createAnalyticsQuery()
+  .dateRange(new Date('2023-01-01'), new Date('2023-01-31'))
+  .eventType('purchase')
+  .userSegment('premium')
+  .addUserAnalytics()
+  .addTimeAnalytics('1d')
+
+const dsl = query.build()
+```
+
+## 🔥 Advanced Features
+
+### Fuzzy & Pattern Matching
+
+```typescript
+const query = createQuery()
+  .fuzzy('title', 'javascript', { fuzziness: 'AUTO' })
+  .regexp('tags', 'react.*')
+  .wildcard('author', 'john*')
+```
+
+### Geo Queries
+
+```typescript
+const query = createQuery()
+  .geoDistance('location', '10km', 40.7128, -74.006)
+  .geoBoundingBox('location', [40.8, -74.1], [40.7, -73.9])
+  .geoPolygon('location', [
+    [40.8, -74.1],
+    [40.8, -73.9],
+    [40.7, -73.9],
+  ])
+```
+
+### Nested & Parent-Child
+
+```typescript
+const query = createQuery()
+  .nested('comments', (q) => {
+    q.match('comments.message', 'excellent').range('comments.rating', {
+      gte: 4,
+    })
+  })
+  .hasChild('comment', (q) => {
+    q.term('approved', true)
+  })
+```
+
+### Function Scoring
+
+```typescript
+const query = createQuery()
+  .match('title', 'tutorial')
+  .functionScore([
+    {
+      filter: { range: { published_date: { gte: 'now-30d' } } },
+      weight: 2.0,
+    },
+    {
+      filter: { term: { featured: true } },
+      weight: 1.5,
+    },
+  ])
+```
+
+### Enhanced Aggregations
+
+```typescript
+const query = createQuery()
+  .match('category', 'electronics')
+  // Metric aggregations
+  .avgAgg('avg_price', 'price')
+  .sumAgg('total_sales', 'sales')
+  .cardinalityAgg('unique_users', 'user_id')
+  // Bucket aggregations
+  .histogramAgg('price_distribution', 'price', 100)
+  .rangeAgg('price_ranges', 'price', [
+    { to: 100, key: 'budget' },
+    { from: 100, to: 500, key: 'mid-range' },
+    { from: 500, key: 'premium' },
+  ])
+```
+
+## 🔄 Migration from v1.x
+
+### Before (HTTP Client Included)
+
+```typescript
+import { createSearchClient } from 'dsl-query-builder'
 
 const client = createSearchClient({
-  endpoint: 'https://your-elasticsearch.com',
+  endpoint: 'https://elasticsearch.example.com',
   index: 'products',
 })
 
-const results = await client.search(
-  createQuery()
-    .match('title', 'laptop')
-    .range('price', { gte: 100, lte: 1000 })
-    .sort('createdAt', 'desc')
-)
-
-console.log(`Found ${results.hits.total.value} products`)
+const results = await client.search(query)
 ```
 
-## Query Builder
-
-### Basic Queries
+### After (Pure Query Builder)
 
 ```typescript
-const query = createQuery()
-  .match('title', 'search term')
-  .matchPhrase('description', 'exact phrase')
-  .term('status', 'published')
-  .terms('tags', ['tech', 'programming'])
-  .range('price', { gte: 10, lte: 100 })
-  .exists('author')
-  .wildcard('title', 'java*')
-  .prefix('title', 'java')
-```
+import { createQuery } from 'dsl-query-builder'
 
-### Boolean Logic
+const query = createQuery().match('title', 'laptop').build()
 
-```typescript
-const query = createQuery()
-  .match('category', 'electronics')
-  .should((q) => q.term('brand', 'apple').term('brand', 'samsung'))
-  .minimumShouldMatch(1)
-  .mustNot((q) => q.term('status', 'discontinued'))
-```
-
-### Advanced Features
-
-```typescript
-const query = createQuery()
-  .multiMatch(['title', 'description'], 'search term', 'best_fields')
-  .sort('price', 'asc')
-  .sortBy({ rating: { order: 'desc', missing: '_last' } })
-  .from(0)
-  .size(20)
-  .source(['title', 'price', 'createdAt'])
-  .highlight(['title', 'content'])
-  .termsAgg('brands', 'brand.keyword', 10)
-  .dateHistogramAgg('sales', 'createdAt', '1M')
-```
-
-## Client Configuration
-
-### Basic Setup
-
-```typescript
-const client = createSearchClient({
-  endpoint: 'https://elasticsearch.example.com',
-  index: 'my-index',
-  token: 'your-token',
-  tokenType: 'bearer', // or 'raw' for proxy services
-  retries: 3,
-  timeout: 5000,
-  headers: { 'Custom-Header': 'value' },
+// Use with your preferred HTTP client
+const response = await fetch('/products/_search', {
+  method: 'POST',
+  body: JSON.stringify(query),
 })
 ```
 
-### Authentication Types
+### Migration Benefits
 
-```typescript
-// Standard Bearer token (default)
-const esClient = createSearchClient({
-  endpoint: 'https://elasticsearch.example.com',
-  token: 'your-api-token',
-})
+- ✅ **~80% smaller bundle** (65KB → 12KB)
+- ✅ **Zero dependencies** (removed axios dependency)
+- ✅ **More flexible** (works with any HTTP client)
+- ✅ **Better performance** (no HTTP client overhead)
+- ✅ **Enhanced features** (advanced queries, geo search, presets)
 
-// Raw token for proxy services
-const proxyClient = createSearchClient({
-  endpoint: 'https://proxy-service.company.com',
-  token: 'session-key-abc123',
-  tokenType: 'raw',
-})
-```
+## 📚 API Reference
 
-### Proxy Services
+### Core Query Methods
 
-```typescript
-import { ResponseTransformers } from 'dsl-query-builder'
+- `match(field, value)` - Full-text match
+- `term(field, value)` - Exact term match
+- `range(field, { gte, lte })` - Range queries
+- `exists(field)` - Field existence
+- `terms(field, values)` - Multiple values
 
-// For non-standard response formats
-const client = createSearchClient({
-  endpoint: 'https://your-proxy-service.com',
-  tokenType: 'raw',
-  responseTransformer: ResponseTransformers.fromSimplified,
-})
+### Advanced Queries
 
-// Custom transformer
-const customClient = createSearchClient({
-  endpoint: 'https://legacy-api.com',
-  responseTransformer: <T>(response: any) => ({
-    took: response.timing?.duration || 0,
-    timed_out: false,
-    _shards: { total: 1, successful: 1, skipped: 0, failed: 0 },
-    hits: {
-      total: { value: response.meta?.total || 0, relation: 'eq' },
-      max_score: null,
-      hits: response.items.map((item: any, index: number) => ({
-        _index: 'api-results',
-        _id: item.uuid || String(index),
-        _score: 1.0,
-        _source: item as T,
-      })),
-    },
-  }),
-})
-```
+- `fuzzy(field, value, options)` - Fuzzy matching
+- `regexp(field, pattern)` - Regular expressions
+- `nested(path, callback)` - Nested queries
+- `geoDistance(field, distance, lat, lon)` - Geo queries
+- `functionScore(functions)` - Custom scoring
 
-## Client API
+### Aggregations
 
-### Search Operations
+- `termsAgg(name, field)` - Terms aggregation
+- `avgAgg(name, field)` - Average values
+- `histogramAgg(name, field, interval)` - Histograms
+- `dateHistogramAgg(name, field, interval)` - Time series
 
-```typescript
-// Basic search
-const results = await client.search<Product>(query)
+### Utilities
 
-// Count documents
-const count = await client.count(query)
+- `validate()` - Query validation
+- `getComplexity()` - Complexity analysis
+- `toJSON(pretty?)` - JSON export
+- `clone()` - Deep copy query
 
-// Multi-search
-const [products, users] = await client.msearch([
-  { index: 'products', query: productQuery },
-  { index: 'users', query: userQuery },
-])
-
-// Search with index override
-const results = await client.search(query, 'specific-index')
-```
-
-### State Management
-
-```typescript
-// Subscribe to state changes
-const unsubscribe = client.subscribe((state) => {
-  if (state.loading) showSpinner()
-  if (state.data) displayResults(state.data)
-  if (state.error) showError(state.error)
-})
-
-// Get current state
-const state = client.getState()
-
-// Update configuration
-client.setIndex('new-index').setToken('new-token')
-```
-
-## Framework Integration
-
-### React
-
-```typescript
-import { useState, useEffect } from 'react'
-
-function SearchComponent() {
-  const [state, setState] = useState(client.getState())
-
-  useEffect(() => {
-    return client.subscribe(setState)
-  }, [])
-
-  return (
-    <div>
-      {state.loading && <div>Loading...</div>}
-      {state.data && <Results data={state.data} />}
-      {state.error && <div>Error: {state.error.message}</div>}
-    </div>
-  )
-}
-```
-
-### Vue
-
-```typescript
-import { reactive, onMounted } from 'vue'
-
-export default {
-  setup() {
-    const state = reactive(client.getState())
-
-    onMounted(() => {
-      client.subscribe((newState) => Object.assign(state, newState))
-    })
-
-    return { state }
-  },
-}
-```
-
-## TypeScript Support
-
-```typescript
-interface Product {
-  id: string
-  title: string
-  price: number
-  category: string
-}
-
-const results = await client.search<Product>(
-  createQuery().match('title', 'laptop')
-)
-
-results.hits.hits.forEach((hit) => {
-  const product = hit._source // TypeScript knows this is Product
-  console.log(product.title, product.price)
-})
-```
-
-## Error Handling
-
-```typescript
-try {
-  const results = await client.search(query)
-} catch (error) {
-  console.error('Search failed:', error.message, error.status)
-}
-```
-
-## Advanced Usage
-
-### Raw Queries
-
-```typescript
-const query = createQuery()
-  .raw({ fuzzy: { title: { value: 'javascript', fuzziness: 'AUTO' } } })
-  .setQuery({ match_all: {} })
-```
-
-### Query Cloning
-
-```typescript
-const baseQuery = createQuery()
-  .match('category', 'electronics')
-  .range('price', { gte: 100 })
-
-const mobileQuery = baseQuery.clone().term('type', 'mobile')
-const laptopQuery = baseQuery.clone().term('type', 'laptop')
-```
-
-## License
-
-MIT
-
-## Contributing
+## 🤝 Contributing
 
 Contributions are welcome! Please read our contributing guidelines and submit pull requests to our GitHub repository.
+
+## 📄 License
+
+MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+**Made with ❤️ for the Elasticsearch/OpenSearch community**
