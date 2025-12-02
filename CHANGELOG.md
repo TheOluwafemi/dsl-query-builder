@@ -1,3 +1,10 @@
+## [2.0.1](https://github.com/TheOluwafemi/dsl-query-builder/compare/v2.0.0...v2.0.1) (2025-12-02)
+
+
+### Bug Fixes
+
+* improve documentation and API discoverability ([845c8b6](https://github.com/TheOluwafemi/dsl-query-builder/commit/845c8b6b708be3cd260d3921fd1076c36b32863e))
+
 # [2.0.0](https://github.com/TheOluwafemi/dsl-query-builder/compare/v1.5.0...v2.0.0) (2025-12-02)
 
 
