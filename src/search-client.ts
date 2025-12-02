@@ -13,6 +13,7 @@ import {
   validateSearchConfig,
   validateIndexName,
   validateMsearchQueries,
+  ValidationError,
 } from './validation'
 
 export class SearchClient {
@@ -82,9 +83,25 @@ export class SearchClient {
   ): Promise<FlexibleSearchResponse<T>> {
     const searchIndex = index || this.config.index
 
-    // If index is provided, validate it
-    if (searchIndex) {
+    // If index is provided and not empty, validate it
+    if (searchIndex && searchIndex.trim()) {
       validateIndexName(searchIndex, 'search method')
+    }
+
+    // For some search services that require an index, provide a meaningful error
+    // Note: For direct Elasticsearch, index can be empty (searches all indices)
+    // But for proxy services, this might be required
+    if (index === '' || (this.config.index === '' && index === undefined)) {
+      // Only throw error if explicitly passed empty string - undefined means search all indices
+      if (index === '') {
+        throw new ValidationError(
+          'Index cannot be empty string. Use undefined to search all indices or provide a valid index name.',
+          'index',
+          'EMPTY_INDEX_NOT_ALLOWED',
+          'search method',
+          { providedIndex: index, configIndex: this.config.index }
+        )
+      }
     }
 
     const dsl = query instanceof QueryBuilder ? query.build() : query
@@ -96,8 +113,10 @@ export class SearchClient {
     for (let attempt = 0; attempt <= this.config.retries; attempt++) {
       try {
         // Use index as path if provided, otherwise use root endpoint
-        const path = searchIndex ? `/${searchIndex}` : ''
+        // This format supports both Elasticsearch and proxy services
+        const path = searchIndex && searchIndex.trim() ? `/${searchIndex}` : ''
 
+        // The payload structure is correct - query in body, index in URL path
         const response = await this.axiosInstance.post<any>(path, dsl)
 
         const transformedData = this.transformResponse<T>(response.data)
@@ -135,9 +154,20 @@ export class SearchClient {
   async count(query: QueryBuilder | QueryDSL, index?: string): Promise<number> {
     const searchIndex = index || this.config.index
 
-    // If index is provided, validate it
-    if (searchIndex) {
+    // If index is provided and not empty, validate it
+    if (searchIndex && searchIndex.trim()) {
       validateIndexName(searchIndex, 'count method')
+    }
+
+    // Validate empty string index similar to search method
+    if (index === '') {
+      throw new ValidationError(
+        'Index cannot be empty string. Use undefined to count all indices or provide a valid index name.',
+        'index',
+        'EMPTY_INDEX_NOT_ALLOWED',
+        'count method',
+        { providedIndex: index, configIndex: this.config.index }
+      )
     }
 
     const dsl = query instanceof QueryBuilder ? query.build() : query
@@ -145,7 +175,7 @@ export class SearchClient {
 
     try {
       // Use index as path if provided, otherwise use root endpoint
-      const path = searchIndex ? `/${searchIndex}` : ''
+      const path = searchIndex && searchIndex.trim() ? `/${searchIndex}` : ''
 
       const response = await this.axiosInstance.post(path, countQuery)
       return response.data.count
