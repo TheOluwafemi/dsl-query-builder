@@ -1,3 +1,10 @@
+## [1.4.1](https://github.com/TheOluwafemi/dsl-query-builder/compare/v1.4.0...v1.4.1) (2025-12-02)
+
+
+### Bug Fixes
+
+* replace Array.includes() with indexOf() to prevent runtime errors ([bbf3dea](https://github.com/TheOluwafemi/dsl-query-builder/commit/bbf3deac32c36c519101d6638ede7de3d8bc2453))
+
 # [1.4.0](https://github.com/TheOluwafemi/dsl-query-builder/compare/v1.3.0...v1.4.0) (2025-12-01)
 
 
