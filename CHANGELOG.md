@@ -1,3 +1,10 @@
+## [1.4.2](https://github.com/TheOluwafemi/dsl-query-builder/compare/v1.4.1...v1.4.2) (2025-12-02)
+
+
+### Bug Fixes
+
+* prevent runtime errors with defensive array and string checking ([defd32a](https://github.com/TheOluwafemi/dsl-query-builder/commit/defd32a85f1d0b725bd27f9c683a5d9cda444cfe))
+
 ## [1.4.1](https://github.com/TheOluwafemi/dsl-query-builder/compare/v1.4.0...v1.4.1) (2025-12-02)
 
 
