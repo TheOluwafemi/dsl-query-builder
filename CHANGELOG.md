@@ -1,3 +1,10 @@
+## [1.4.3](https://github.com/TheOluwafemi/dsl-query-builder/compare/v1.4.2...v1.4.3) (2025-12-02)
+
+
+### Bug Fixes
+
+* prevent runtime errors from undefined properties in validation and error handling ([c3f20de](https://github.com/TheOluwafemi/dsl-query-builder/commit/c3f20de6fb5f1c4f1bd4841f245cbb2aec0f49bd))
+
 ## [1.4.2](https://github.com/TheOluwafemi/dsl-query-builder/compare/v1.4.1...v1.4.2) (2025-12-02)
 
 

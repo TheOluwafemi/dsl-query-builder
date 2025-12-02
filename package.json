@@ -1,6 +1,6 @@
 {
   "name": "dsl-query-builder",
-  "version": "1.4.2",
+  "version": "1.4.3",
   "description": "A fluent TypeScript query builder for OpenSearch/Elasticsearch DSL",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
