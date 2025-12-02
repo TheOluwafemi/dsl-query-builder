@@ -1,73 +1,63 @@
 # [1.5.0](https://github.com/TheOluwafemi/dsl-query-builder/compare/v1.4.3...v1.5.0) (2025-12-02)
 
-
 ### Features
 
-* improve index validation and error handling in SearchClient ([de56751](https://github.com/TheOluwafemi/dsl-query-builder/commit/de567516dfba49ba76977ca62a1292bd492695b1))
+- improve index validation and error handling in SearchClient ([de56751](https://github.com/TheOluwafemi/dsl-query-builder/commit/de567516dfba49ba76977ca62a1292bd492695b1))
 
 ## [1.4.3](https://github.com/TheOluwafemi/dsl-query-builder/compare/v1.4.2...v1.4.3) (2025-12-02)
 
-
 ### Bug Fixes
 
-* prevent runtime errors from undefined properties in validation and error handling ([c3f20de](https://github.com/TheOluwafemi/dsl-query-builder/commit/c3f20de6fb5f1c4f1bd4841f245cbb2aec0f49bd))
+- prevent runtime errors from undefined properties in validation and error handling ([c3f20de](https://github.com/TheOluwafemi/dsl-query-builder/commit/c3f20de6fb5f1c4f1bd4841f245cbb2aec0f49bd))
 
 ## [1.4.2](https://github.com/TheOluwafemi/dsl-query-builder/compare/v1.4.1...v1.4.2) (2025-12-02)
 
-
 ### Bug Fixes
 
-* prevent runtime errors with defensive array and string checking ([defd32a](https://github.com/TheOluwafemi/dsl-query-builder/commit/defd32a85f1d0b725bd27f9c683a5d9cda444cfe))
+- prevent runtime errors with defensive array and string checking ([defd32a](https://github.com/TheOluwafemi/dsl-query-builder/commit/defd32a85f1d0b725bd27f9c683a5d9cda444cfe))
 
 ## [1.4.1](https://github.com/TheOluwafemi/dsl-query-builder/compare/v1.4.0...v1.4.1) (2025-12-02)
 
-
 ### Bug Fixes
 
-* replace Array.includes() with indexOf() to prevent runtime errors ([bbf3dea](https://github.com/TheOluwafemi/dsl-query-builder/commit/bbf3deac32c36c519101d6638ede7de3d8bc2453))
+- replace Array.includes() with indexOf() to prevent runtime errors ([bbf3dea](https://github.com/TheOluwafemi/dsl-query-builder/commit/bbf3deac32c36c519101d6638ede7de3d8bc2453))
 
 # [1.4.0](https://github.com/TheOluwafemi/dsl-query-builder/compare/v1.3.0...v1.4.0) (2025-12-01)
 
-
 ### Features
 
-* enhance validation system with comprehensive error tracking ([2c8b8b4](https://github.com/TheOluwafemi/dsl-query-builder/commit/2c8b8b4ecb4098b368890c2f997a1e61a520fb82))
+- enhance validation system with comprehensive error tracking ([2c8b8b4](https://github.com/TheOluwafemi/dsl-query-builder/commit/2c8b8b4ecb4098b368890c2f997a1e61a520fb82))
 
 # [1.3.0](https://github.com/TheOluwafemi/dsl-query-builder/compare/v1.2.0...v1.3.0) (2025-12-01)
 
-
 ### Features
 
-* add configurable token authentication types ([9d758b4](https://github.com/TheOluwafemi/dsl-query-builder/commit/9d758b4852995c44d4d59f4432ffcb92bfc6534c))
+- add configurable token authentication types ([9d758b4](https://github.com/TheOluwafemi/dsl-query-builder/commit/9d758b4852995c44d4d59f4432ffcb92bfc6534c))
 
 # [1.2.0](https://github.com/TheOluwafemi/dsl-query-builder/compare/v1.1.0...v1.2.0) (2025-12-01)
 
-
 ### Features
 
-* support direct endpoint usage without automatic path suffixes ([c22669d](https://github.com/TheOluwafemi/dsl-query-builder/commit/c22669df57cd99bdefed197102471e623d9af308))
+- support direct endpoint usage without automatic path suffixes ([c22669d](https://github.com/TheOluwafemi/dsl-query-builder/commit/c22669df57cd99bdefed197102471e623d9af308))
 
 # [1.1.0](https://github.com/TheOluwafemi/dsl-query-builder/compare/v1.0.2...v1.1.0) (2025-12-01)
 
-
 ### Features
 
-* add response transformation support for proxy services ([b9e29fe](https://github.com/TheOluwafemi/dsl-query-builder/commit/b9e29fe899165929b450e6748a7d7cf5661f07b3))
-* add support for proxy services and improve search client index handling ([4a54267](https://github.com/TheOluwafemi/dsl-query-builder/commit/4a54267ff17f10aa029a02d4e524c61274251b96))
+- add response transformation support for proxy services ([b9e29fe](https://github.com/TheOluwafemi/dsl-query-builder/commit/b9e29fe899165929b450e6748a7d7cf5661f07b3))
+- add support for proxy services and improve search client index handling ([4a54267](https://github.com/TheOluwafemi/dsl-query-builder/commit/4a54267ff17f10aa029a02d4e524c61274251b96))
 
 ## [1.0.2](https://github.com/TheOluwafemi/dsl-query-builder/compare/v1.0.1...v1.0.2) (2025-11-22)
 
-
 ### Bug Fixes
 
-* deploy package to npm registry ([f4aabd5](https://github.com/TheOluwafemi/dsl-query-builder/commit/f4aabd57a804e6e40566abf9557193c16f98d6cb))
+- deploy package to npm registry ([f4aabd5](https://github.com/TheOluwafemi/dsl-query-builder/commit/f4aabd57a804e6e40566abf9557193c16f98d6cb))
 
 ## [1.0.1](https://github.com/TheOluwafemi/dsl-query-builder/compare/v1.0.0...v1.0.1) (2025-11-22)
 
-
 ### Bug Fixes
 
-* README with improved examples, clearer instructions for client setup and deploy package. ([9c034de](https://github.com/TheOluwafemi/dsl-query-builder/commit/9c034de8dd46101712abd1d84a9454387faa6367))
+- README with improved examples, clearer instructions for client setup and deploy package. ([9c034de](https://github.com/TheOluwafemi/dsl-query-builder/commit/9c034de8dd46101712abd1d84a9454387faa6367))
 
 # 1.0.0 (2025-11-22)
 
@@ -90,6 +80,100 @@
 - update workflows and tests for DSL Query Builder package ([f7e30bf](https://github.com/TheOluwafemi/dsl-query-builder/commit/f7e30bf3a56f5b3444febd4773cd7089a62f7d53))
 
 # Changelog
+
+## [2.0.0] - 2024-12-02
+
+### 🚀 MAJOR RELEASE: Pure Query Builder
+
+This is a **breaking change** that transforms the library from an HTTP client package to a lightweight, zero-dependency query builder.
+
+### ✨ New Features
+
+- **Zero Dependencies**: Completely removed axios dependency
+- **Enhanced Query Types**: Added 20+ advanced query methods
+  - Fuzzy queries with configurable fuzziness
+  - Regex pattern matching
+  - Geo-spatial queries (distance, bounding box, polygon)
+  - Nested object queries
+  - Parent-child relationships
+  - Function scoring with custom boost functions
+  - Constant score queries
+- **Query Builder Presets**: 4 specialized builders for common use cases
+  - `EcommerceQueryBuilder` - Product search with faceting
+  - `LogsQueryBuilder` - Log analysis and monitoring
+  - `AnalyticsQueryBuilder` - User behavior analytics
+  - `ContentQueryBuilder` - Content management search
+- **Enhanced Aggregations**: Extended aggregation support
+  - Metric aggregations (avg, sum, min, max, cardinality, stats)
+  - Bucket aggregations (histogram, range, geo distance)
+  - Time-based analytics
+- **Query Utilities**: Advanced query management
+  - Query validation with detailed error reporting
+  - Query complexity analysis
+  - Pretty JSON export
+  - Deep query cloning
+
+### 💔 Breaking Changes
+
+- **HTTP Client Removed**: No longer includes built-in HTTP client
+  - Use with any HTTP client (fetch, axios, ky, etc.)
+  - Provides pure DSL query objects
+- **API Changes**:
+  - `createSearchClient()` → Use `createQuery()` with your HTTP client
+  - Response transformers removed (handle in your HTTP layer)
+  - State management removed (implement in your application layer)
+
+### 🎯 Performance Improvements
+
+- **~70% Bundle Size Reduction**: 65KB → 19.6KB (5.6KB gzipped)
+- **Zero Runtime Dependencies**: No axios or other dependencies
+- **Tree Shakeable**: Only import what you use
+- **Faster Load Times**: Minimal JavaScript overhead
+
+### 🔄 Migration Guide
+
+#### Before (v1.x)
+
+```typescript
+import { createSearchClient } from 'dsl-query-builder'
+
+const client = createSearchClient({
+  endpoint: 'https://elasticsearch.example.com',
+  index: 'products',
+})
+
+const results = await client.search(query)
+```
+
+#### After (v2.x)
+
+```typescript
+import { createQuery } from 'dsl-query-builder'
+
+const query = createQuery().match('title', 'laptop').build()
+
+// Use with any HTTP client
+const response = await fetch('/products/_search', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(query),
+})
+```
+
+### 🧪 Testing
+
+- **179 Tests**: Comprehensive test coverage for all features
+- **Integration Tests**: Real-world usage scenarios
+- **Type Safety Tests**: Full TypeScript validation
+
+### 📚 Documentation
+
+- Complete README rewrite with new API examples
+- Migration guide for v1.x users
+- HTTP client integration examples
+- Specialized preset documentation
+
+---
 
 All notable changes to this project will be documented in this file.
 

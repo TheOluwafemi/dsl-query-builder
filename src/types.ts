@@ -1,67 +1,3 @@
-export interface SearchConfig {
-  endpoint: string
-  index?: string
-  token?: string
-  tokenType?: 'bearer' | 'raw'
-  retries?: number
-  timeout?: number
-  headers?: Record<string, string>
-  responseTransformer?: <T>(response: any) => SearchResponse<T>
-}
-
-// Internal config with all optional fields resolved
-export interface ResolvedSearchConfig {
-  endpoint: string
-  index: string
-  token: string
-  tokenType: 'bearer' | 'raw'
-  retries: number
-  timeout: number
-  headers: Record<string, string>
-  responseTransformer: <T>(response: any) => SearchResponse<T>
-}
-
-// Standard Elasticsearch response structure
-export interface SearchResponse<T = any> {
-  took: number
-  timed_out: boolean
-  _shards: {
-    total: number
-    successful: number
-    skipped: number
-    failed: number
-  }
-  hits: {
-    total: {
-      value: number
-      relation: string
-    }
-    max_score: number | null
-    hits: Array<{
-      _index: string
-      _id: string
-      _score: number
-      _source: T
-    }>
-  }
-  aggregations?: Record<string, any>
-}
-
-// Flexible response that can accommodate proxy service variations
-export type FlexibleSearchResponse<T = any> = SearchResponse<T> | any
-
-export interface SearchError {
-  message: string
-  status?: number
-  details?: any
-}
-
-export interface SearchState<T = any> {
-  data: FlexibleSearchResponse<T> | null
-  error: SearchError | null
-  loading: boolean
-}
-
 export type SortOrder = 'asc' | 'desc'
 
 export interface SortOption {
@@ -97,4 +33,97 @@ export interface RangeQuery {
   boost?: number
 }
 
+// Fuzzy query options
+export interface FuzzyQuery {
+  value: string
+  fuzziness?: string | number
+  max_expansions?: number
+  prefix_length?: number
+  transpositions?: boolean
+  boost?: number
+}
+
+// Geo query interfaces
+export interface GeoPoint {
+  lat: number
+  lon: number
+}
+
+export interface GeoDistance {
+  distance: string
+  [field: string]: GeoPoint | string
+}
+
+export interface GeoBoundingBox {
+  [field: string]: {
+    top_left: GeoPoint
+    bottom_right: GeoPoint
+  }
+}
+
+export interface GeoPolygon {
+  [field: string]: {
+    points: GeoPoint[]
+  }
+}
+
+// Nested query interface
+export interface NestedQuery {
+  path: string
+  query: any
+  score_mode?: 'avg' | 'sum' | 'max' | 'min' | 'none'
+}
+
+// Function score interfaces
+export interface FunctionScore {
+  functions: Array<{
+    filter?: any
+    weight?: number
+    field_value_factor?: {
+      field: string
+      factor?: number
+      modifier?: string
+    }
+    script_score?: {
+      script: string
+    }
+  }>
+  boost_mode?: 'multiply' | 'replace' | 'sum' | 'avg' | 'max' | 'min'
+  score_mode?: 'multiply' | 'sum' | 'avg' | 'first' | 'max' | 'min'
+}
+
+// Aggregation interfaces
+export interface TermsAggregation {
+  field: string
+  size?: number
+  order?: Record<string, SortOrder>
+  include?: string | string[]
+  exclude?: string | string[]
+}
+
+export interface DateHistogramAggregation {
+  field: string
+  calendar_interval?: string
+  fixed_interval?: string
+  format?: string
+  time_zone?: string
+  min_doc_count?: number
+}
+
+export interface RangeAggregation {
+  field: string
+  ranges: Array<{
+    from?: number
+    to?: number
+    key?: string
+  }>
+}
+
+export interface HistogramAggregation {
+  field: string
+  interval: number
+  min_doc_count?: number
+}
+
+// Re-export validation error
 export { ValidationError } from './validation'

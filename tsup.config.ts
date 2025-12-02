@@ -8,5 +8,9 @@ export default defineConfig({
   skipNodeModulesBundle: true,
   clean: true,
   outDir: 'dist',
-  external: [],
+  external: [], // No external dependencies!
+  minify: true, // Enable minification for smaller bundle
+  treeshake: true, // Enable tree-shaking
+  splitting: false, // Keep as single bundle for simplicity
+  sourcemap: false, // Disable sourcemaps for smaller size
 })
