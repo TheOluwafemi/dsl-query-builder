@@ -233,7 +233,7 @@ export class SearchClient {
 
   private handleError(error: AxiosError): SearchError {
     const searchError: SearchError = {
-      message: error.message,
+      message: error.message || 'Unknown error occurred',
       status: error.response?.status,
       details: error.response?.data,
     }
