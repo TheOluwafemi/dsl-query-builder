@@ -262,7 +262,10 @@ export class SearchClient {
         'ETIMEDOUT',
         'ENOTFOUND',
       ]
-      return networkErrors.some((netError) => error.message.includes(netError))
+      // Defensive check to prevent .includes error when message is undefined
+      return networkErrors.some(
+        (netError) => error.message && error.message.indexOf(netError) !== -1
+      )
     }
 
     return false
