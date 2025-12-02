@@ -1,3 +1,30 @@
+# [2.0.0](https://github.com/TheOluwafemi/dsl-query-builder/compare/v1.5.0...v2.0.0) (2025-12-02)
+
+
+* feat!: Transform to zero-dependency query builder v2.0.0 ([e3afca3](https://github.com/TheOluwafemi/dsl-query-builder/commit/e3afca30e517242f7684948e7d2876a7e06b4406))
+
+
+### Bug Fixes
+
+* **ci:** audit only production dependencies to avoid npm vulnerabilities ([1c262d9](https://github.com/TheOluwafemi/dsl-query-builder/commit/1c262d97617a4388f9d226e205790b26bb9045f4))
+* remove unused imports to resolve build warnings and semicolon ([148f141](https://github.com/TheOluwafemi/dsl-query-builder/commit/148f14199441d539ce13133caf02f0f08ea7f512))
+
+
+### BREAKING CHANGES
+
+* Remove HTTP client, add advanced query features
+
+- 🪶 Reduce bundle 70% (65KB→19.6KB, 5.6KB gzipped)
+- ⚡ Zero dependencies (removed axios)
+- 🔥 Add 20+ advanced queries (fuzzy, geo, nested)
+- 🎯 Add 4 specialized presets (ecommerce, logs, analytics, content)
+- 📊 Enhanced aggregations (metric, bucket, time-based)
+- 🔧 Add query utilities (validation, complexity, export)
+- 🌐 Universal HTTP client compatibility
+- 🧪 179 comprehensive tests
+
+Migration: createSearchClient() → createQuery().build() + your HTTP client
+
 # [1.5.0](https://github.com/TheOluwafemi/dsl-query-builder/compare/v1.4.3...v1.5.0) (2025-12-02)
 
 ### Features
