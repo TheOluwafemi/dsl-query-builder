@@ -1,17 +1,17 @@
 # DSL Query Builder
 
-🏗️ **Lightweight, zero-dependency TypeScript query builder for Elasticsearch/OpenSearch DSL**
+**Lightweight, zero-dependency TypeScript query builder for Elasticsearch/OpenSearch DSL**
 
-## ⭐ Why Choose This?
+## Why Choose This?
 
-- 🪶 **Lightweight**: <15KB, zero dependencies (was 65KB with axios)
-- 🔒 **Type-safe**: Full TypeScript support with generic types
-- 🚀 **Fast**: No HTTP overhead, pure query building performance
-- 🎯 **Focused**: Does one thing extremely well - building queries
-- 🔧 **Universal**: Works with ANY HTTP client (fetch, axios, ky, etc.)
-- 🌟 **Enhanced**: Advanced queries, geo search, nested queries, and more
+- **Lightweight**: <15KB, zero dependencies (was 65KB with axios)
+- **Type-safe**: Full TypeScript support with generic types
+- **Fast**: No HTTP overhead, pure query building performance
+- **Focused**: Does one thing extremely well - building queries
+- **Universal**: Works with ANY HTTP client (fetch, axios, ky, etc.)
+- **Enhanced**: Advanced queries, geo search, nested queries, and more
 
-## 🚀 Quick Reference
+## Quick Reference
 
 | Category        | Method              | Example                                            |
 | --------------- | ------------------- | -------------------------------------------------- |
@@ -30,13 +30,13 @@
 | **Control**     | `from()` / `size()` | `query.from(20).size(10)`                          |
 |                 | `sort()`            | `query.sort('createdAt', 'desc')`                  |
 
-## 📦 Installation
+## Installation
 
 ```bash
 npm install dsl-query-builder
 ```
 
-## 🚀 Quick Start
+## Quick Start
 
 ```typescript
 import { createQuery } from 'dsl-query-builder'
@@ -56,7 +56,7 @@ const results = await fetch('/search', {
 }).then((r) => r.json())
 ```
 
-## 🎯 Core Query Methods
+## Core Query Methods
 
 ### Text Search
 
@@ -147,7 +147,7 @@ const dsl = createQuery().match('title', 'react').build()
 const response = await myHttpClient.post('/search', dsl)
 ```
 
-## 🎯 Specialized Query Builders
+## Specialized Query Builders
 
 ### E-commerce Search
 
@@ -183,7 +183,7 @@ const query = createAnalyticsQuery()
 const dsl = query.build()
 ```
 
-## 🔥 Advanced Features
+## Advanced Features
 
 ### Fuzzy & Pattern Matching
 
@@ -326,7 +326,7 @@ const query = createQuery()
   .profile()
 ```
 
-## 🔄 Migration from v1.x
+## Migration from v1.x
 
 ### Before (HTTP Client Included)
 
@@ -357,11 +357,11 @@ const response = await fetch('/products/_search', {
 
 ### Migration Benefits
 
-- ✅ **~80% smaller bundle** (65KB → 12KB)
-- ✅ **Zero dependencies** (removed axios dependency)
-- ✅ **More flexible** (works with any HTTP client)
-- ✅ **Better performance** (no HTTP client overhead)
-- ✅ **Enhanced features** (advanced queries, geo search, presets)
+- **~80% smaller bundle** (65KB → 12KB)
+- **Zero dependencies** (removed axios dependency)
+- **More flexible** (works with any HTTP client)
+- **Better performance** (no HTTP client overhead)
+- **Enhanced features** (advanced queries, geo search, presets)
 
 ## 📚 API Reference
 
@@ -467,11 +467,11 @@ const response = await fetch('/products/_search', {
 - `createAnalyticsQuery()` - Analytics specialized builder
 - `createContentQuery()` - Content management specialized builder
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Please read our contributing guidelines and submit pull requests to our GitHub repository.
 
-## 📄 License
+## License
 
 MIT License - see the [LICENSE](LICENSE) file for details.
 
